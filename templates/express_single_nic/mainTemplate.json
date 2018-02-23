@@ -1,0 +1,282 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"location": {
+			"type": "string"
+		},
+		"virtualMachineName": {
+			"type": "string"
+		},
+		"virtualMachineSize": {
+			"type": "string"
+		},
+		"adminUsername": {
+			"type": "string"
+		},
+		"adminPassword": {
+			"type": "securestring"
+		},
+		"virtualNetworkName": {
+			"type": "string"
+		},
+		"vnetRG": {
+			"type": "string"
+		},
+		"vnetNewOrExisting": {
+			"type": "string"
+		},
+		"networkInterfaceName": {
+			"type": "string"
+		},
+		"networkSecurityGroupName": {
+			"type": "string"
+		},
+		"diagnosticsStorageAccountName": {
+			"type": "string"
+		},
+		"diagnosticsStorageAccountType": {
+			"type": "string"
+		},
+		"addressPrefix": {
+			"type": "string"
+		},
+		"subnetName": {
+			"type": "string"
+		},
+		"subnetPrefix": {
+			"type": "string"
+		},
+		"baseUrl": {
+			"defaultValue": "https://github.com/citrix/netscaler-azure-templates",
+			"type": "String",
+			"metadata": {
+				"artifactsBaseUrl": "",
+				"description": "The base URL for dependent assets"
+			}
+		}
+	},
+	"variables": {
+		"vnetId": "[resourceId(parameters('vnetRG'),'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+		"subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
+		"nicId": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
+	},
+	"resources": [{
+			"type": "Microsoft.Compute/virtualMachines/extensions",
+			"name": "[concat(parameters('virtualMachineName'),'/', 'vpx-express')]",
+			"apiVersion": "2017-12-01",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName'))]"
+			],
+			"properties": {
+				"publisher": "Microsoft.OSTCExtensions",
+				"type": "CustomScriptForLinux",
+				"typeHandlerVersion": "1.5",
+				"autoUpgradeMinorVersion": true,
+				"settings": {
+					"fileUris": ["https://nsmpscript.blob.core.windows.net/custom-script/express/custom_script.py"],
+					"enableInternalDNSCheck": "false"
+				},
+				"protectedSettings": {
+					"commandToExecute": "[concat('/var/python/bin/python custom_script.py ', parameters('adminPassword'))]"
+				}
+			}
+		}, {
+			"name": "[parameters('virtualMachineName')]",
+			"type": "Microsoft.Compute/virtualMachines",
+			"apiVersion": "2017-12-01",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[concat('Microsoft.Network/networkInterfaces/', parameters('networkInterfaceName'))]",
+				"[concat('Microsoft.Network/publicIpAddresses/', parameters('virtualMachineName'), '-nsip')]",
+				"[concat('Microsoft.Storage/storageAccounts/', parameters('diagnosticsStorageAccountName'))]"
+			],
+			"properties": {
+				"osProfile": {
+					"computerName": "[parameters('virtualMachineName')]",
+					"adminUsername": "[parameters('adminUsername')]",
+					"adminPassword": "[parameters('adminPassword')]",
+					"customData": "[base64(concat('config=express;username=', parameters('adminUsername') ))]"
+				},
+				"hardwareProfile": {
+					"vmSize": "[parameters('virtualMachineSize')]"
+				},
+				"storageProfile": {
+					"imageReference": {
+						"publisher": "citrix",
+						"offer": "netscalervpx-120",
+						"sku": "netscalervpxexpress",
+						"version": "latest"
+					},
+					"osDisk": {
+						"createOption": "fromImage",
+						"managedDisk": {
+							"storageAccountType": "Standard_LRS"
+						}
+					},
+					"dataDisks": []
+				},
+				"networkProfile": {
+					"networkInterfaces": [{
+							"id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
+						}
+					]
+				},
+				"diagnosticsProfile": {
+					"bootDiagnostics": {
+						"enabled": true,
+						"storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('diagnosticsStorageAccountName')), '2017-10-01').primaryEndpoints['blob']]"
+					}
+				}
+			},
+			"plan": {
+				"name": "netscalervpxexpress",
+				"publisher": "citrix",
+				"product": "netscalervpx-120"
+			}
+		}, {
+			"name": "[parameters('diagnosticsStorageAccountName')]",
+			"type": "Microsoft.Storage/storageAccounts",
+			"apiVersion": "2017-10-01",
+			"kind": "Storage",
+			"location": "[parameters('location')]",
+			"sku": {
+				"name": "[parameters('diagnosticsStorageAccountType')]"
+			},
+			"properties": {}
+		}, {
+			"name": "[parameters('virtualNetworkName')]",
+			"type": "Microsoft.Network/virtualNetworks",
+			"apiVersion": "2017-10-01",
+			"location": "[parameters('location')]",
+			"properties": {
+				"addressSpace": {
+					"addressPrefixes": [
+						"[parameters('addressPrefix')]"
+					]
+				},
+				"subnets": [{
+						"name": "[parameters('subnetName')]",
+						"properties": {
+							"addressPrefix": "[parameters('subnetPrefix')]"
+						}
+					}
+				]
+			},
+			"condition": "[equals(parameters('vnetNewOrExisting'),'new')]"
+		}, {
+			"name": "[parameters('networkInterfaceName')]",
+			"type": "Microsoft.Network/networkInterfaces",
+			"apiVersion": "2017-10-01",
+			"location": "[parameters('location')]",
+			"dependsOn": [
+				"[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]",
+				"[concat('Microsoft.Network/publicIpAddresses/', parameters('virtualMachineName'), '-vip')]",
+				"[concat('Microsoft.Network/publicIpAddresses/', parameters('virtualMachineName'), '-nsip')]",
+				"[concat('Microsoft.Network/networkSecurityGroups/', parameters('networkSecurityGroupName'))]"
+			],
+			"properties": {
+				"ipConfigurations": [{
+						"name": "nsip",
+						"properties": {
+							"primary": true,
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							},
+							"privateIPAllocationMethod": "Dynamic",
+							"publicIpAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIpAddresses', concat(parameters('virtualMachineName'), '-nsip'))]"
+							}
+						}
+					}, {
+						"name": "vip",
+						"properties": {
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							},
+							"privateIPAllocationMethod": "Dynamic",
+							"publicIpAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIpAddresses', concat(parameters('virtualMachineName'), '-vip'))]"
+							}
+						}
+					}, {
+						"name": "snip",
+						"properties": {
+							"subnet": {
+								"id": "[variables('subnetRef')]"
+							},
+							"privateIPAllocationMethod": "Dynamic"
+						}
+					}
+				],
+				"networkSecurityGroup": {
+					"id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroupName'))]"
+				}
+			}
+		}, {
+			"name": "[concat(parameters('virtualMachineName'), '-vip')]",
+			"type": "Microsoft.Network/publicIpAddresses",
+			"apiVersion": "2017-10-01",
+			"location": "[parameters('location')]",
+			"properties": {
+				"publicIpAllocationMethod": "Dynamic"
+			},
+			"sku": {
+				"name": "Basic"
+			}
+		}, {
+			"name": "[concat(parameters('virtualMachineName'), '-nsip')]",
+			"type": "Microsoft.Network/publicIpAddresses",
+			"apiVersion": "2017-10-01",
+			"location": "[parameters('location')]",
+			"properties": {
+				"publicIpAllocationMethod": "Dynamic"
+			},
+			"sku": {
+				"name": "Basic"
+			}
+		}, {
+			"name": "[parameters('networkSecurityGroupName')]",
+			"type": "Microsoft.Network/networkSecurityGroups",
+			"apiVersion": "2017-10-01",
+			"location": "[parameters('location')]",
+			"properties": {
+				"securityRules": [{
+						"name": "ssh-rule",
+						"properties": {
+							"description": "Allow remote SSH",
+							"priority": 1000,
+							"protocol": "TCP",
+							"access": "Allow",
+							"direction": "Inbound",
+							"sourceAddressPrefix": "Internet",
+							"sourcePortRange": "*",
+							"destinationAddressPrefix": "*",
+							"destinationPortRange": "22"
+						}
+					}, {
+						"name": "web-rule",
+						"properties": {
+							"description": "Allow Secure WEB",
+							"priority": 1001,
+							"protocol": "Tcp",
+							"access": "Allow",
+							"direction": "Inbound",
+							"sourceAddressPrefix": "Internet",
+							"sourcePortRange": "*",
+							"destinationAddressPrefix": "*",
+							"destinationPortRange": "443"
+						}
+					}
+				]
+			}
+		}
+	],
+	"outputs": {
+		"adminUsername": {
+			"type": "string",
+			"value": "[parameters('adminUsername')]"
+		}
+	}
+}
