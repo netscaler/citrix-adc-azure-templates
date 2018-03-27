@@ -2,50 +2,99 @@
 	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
 	"contentVersion": "1.0.0.0",
 	"parameters": {
-		"location": {
-			"type": "string"
-		},
 		"virtualMachineName": {
-			"type": "string"
+			"defaultValue": "NetScaler-VPX-Express",
+			"type": "string",
+			"metadata": {
+				"description": "Name of the Virtual Machine."
+			}
 		},
 		"virtualMachineSize": {
-			"type": "string"
+			"defaultValue": "Standard_DS3_v2",
+			"type": "String",
+			"allowedValues": [
+				"Standard_DS3_v2"
+			],
+			"metadata": {
+				"description": "Size of Azure Virtual Machine."
+			}
 		},
 		"adminUsername": {
-			"type": "string"
+			"defaultValue": "nsroot",
+			"type": "String",
+			"metadata": {
+				"description": "Admin user name for the Virtual Machine."
+			}
 		},
 		"adminPassword": {
-			"type": "securestring"
+			"type": "SecureString",
+			"metadata": {
+				"description": "Admin password for the Virtual Machine."
+			}
 		},
 		"virtualNetworkName": {
-			"type": "string"
+			"defaultValue": "vnet01",
+			"type": "String",
+			"metadata": {
+				"description": "Name of Virtual Network"
+			}
 		},
-		"vnetRG": {
-			"type": "string"
+		"vnetResourceGroup": {
+			"defaultValue": "",
+			"type": "String",
+			"metadata": {
+				"description": "Resource Group name of existing Virtual Network. Leave empty if Resource Group is same as current deployment."
+			}
 		},
 		"vnetNewOrExisting": {
-			"type": "string"
+			"defaultValue": "new",
+			"allowedValues": [
+				"new",
+				"existing"
+			],
+			"type": "String"
 		},
 		"networkInterfaceName": {
-			"type": "string"
+			"defaultValue": "NetScaler-VPX-Express-Nic",
+			"type": "string",
+			"metadata": {
+				"description": "Name of the Virtual Network Interface Card."
+			}
 		},
 		"networkSecurityGroupName": {
-			"type": "string"
+			"defaultValue": "NetScaler-VPX-Express-nsg",
+			"type": "string",
+			"metadata": {
+				"description": "Name of the Network Security Group."
+			}
 		},
 		"diagnosticsStorageAccountName": {
-			"type": "string"
-		},
-		"diagnosticsStorageAccountType": {
-			"type": "string"
+			"defaultValue": "",
+			"type": "string",
+			"metadata": {
+				"description": "Name of the diagnostics Storage Account. If left empty, an auto-generated name will be used."
+			}
 		},
 		"addressPrefix": {
-			"type": "string"
+			"defaultValue": "10.11.0.0/24",
+			"type": "String",
+			"metadata": {
+				"description": "Value of virtual network's Address range in CIDR form. Ignore this field if opting for existing Virtual Network."
+			}
 		},
 		"subnetName": {
-			"type": "string"
+			"defaultValue": "default_subnet",
+			"type": "string",
+			"metadata": {
+				"description": "Name of subnet. ensure subnet exists in case of existing Virtual Network."
+			}
 		},
 		"subnetPrefix": {
-			"type": "string"
+			"defaultValue": "10.11.0.0/24",
+			"type": "String",
+			"metadata": {
+				"description": "Value of default subnet address range in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
+			}
 		},
 		"baseUrl": {
 			"defaultValue": "https://github.com/citrix/netscaler-azure-templates",
@@ -57,15 +106,17 @@
 		}
 	},
 	"variables": {
-		"vnetId": "[resourceId(parameters('vnetRG'),'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+		"vnetRg": "[if(equals(parameters('vnetResourceGroup'), ''), resourceGroup().name,parameters('vnetResourceGroup'))]",
+		"vnetId": "[resourceId(variables('vnetRG'),'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
 		"subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]",
-		"nicId": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
+		"nicId": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]",
+		"diagnosticsStorageAccountName": "[if(equals(parameters('diagnosticsStorageAccountName'), ''), concat('vpxstracct', uniqueString(resourceGroup().id)), parameters('diagnosticsStorageAccountName'))]"
 	},
 	"resources": [{
 			"type": "Microsoft.Compute/virtualMachines/extensions",
 			"name": "[concat(parameters('virtualMachineName'),'/', 'vpx-express')]",
 			"apiVersion": "2017-12-01",
-			"location": "[parameters('location')]",
+			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName'))]"
 			],
@@ -86,11 +137,11 @@
 			"name": "[parameters('virtualMachineName')]",
 			"type": "Microsoft.Compute/virtualMachines",
 			"apiVersion": "2017-12-01",
-			"location": "[parameters('location')]",
+			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[concat('Microsoft.Network/networkInterfaces/', parameters('networkInterfaceName'))]",
 				"[concat('Microsoft.Network/publicIpAddresses/', parameters('virtualMachineName'), '-nsip')]",
-				"[concat('Microsoft.Storage/storageAccounts/', parameters('diagnosticsStorageAccountName'))]"
+				"[concat('Microsoft.Storage/storageAccounts/', variables('diagnosticsStorageAccountName'))]"
 			],
 			"properties": {
 				"osProfile": {
@@ -126,7 +177,7 @@
 				"diagnosticsProfile": {
 					"bootDiagnostics": {
 						"enabled": true,
-						"storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', parameters('diagnosticsStorageAccountName')), '2017-10-01').primaryEndpoints['blob']]"
+						"storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts', variables('diagnosticsStorageAccountName')), '2017-10-01').primaryEndpoints['blob']]"
 					}
 				}
 			},
@@ -136,20 +187,20 @@
 				"product": "netscalervpx-120"
 			}
 		}, {
-			"name": "[parameters('diagnosticsStorageAccountName')]",
+			"name": "[variables('diagnosticsStorageAccountName')]",
 			"type": "Microsoft.Storage/storageAccounts",
 			"apiVersion": "2017-10-01",
 			"kind": "Storage",
-			"location": "[parameters('location')]",
+			"location": "[resourceGroup().location]",
 			"sku": {
-				"name": "[parameters('diagnosticsStorageAccountType')]"
+				"name": "Standard_LRS"
 			},
 			"properties": {}
 		}, {
 			"name": "[parameters('virtualNetworkName')]",
 			"type": "Microsoft.Network/virtualNetworks",
 			"apiVersion": "2017-10-01",
-			"location": "[parameters('location')]",
+			"location": "[resourceGroup().location]",
 			"properties": {
 				"addressSpace": {
 					"addressPrefixes": [
@@ -169,7 +220,7 @@
 			"name": "[parameters('networkInterfaceName')]",
 			"type": "Microsoft.Network/networkInterfaces",
 			"apiVersion": "2017-10-01",
-			"location": "[parameters('location')]",
+			"location": "[resourceGroup().location]",
 			"dependsOn": [
 				"[concat('Microsoft.Network/virtualNetworks/', parameters('virtualNetworkName'))]",
 				"[concat('Microsoft.Network/publicIpAddresses/', parameters('virtualMachineName'), '-vip')]",
@@ -218,7 +269,7 @@
 			"name": "[concat(parameters('virtualMachineName'), '-vip')]",
 			"type": "Microsoft.Network/publicIpAddresses",
 			"apiVersion": "2017-10-01",
-			"location": "[parameters('location')]",
+			"location": "[resourceGroup().location]",
 			"properties": {
 				"publicIpAllocationMethod": "Dynamic"
 			},
@@ -229,7 +280,7 @@
 			"name": "[concat(parameters('virtualMachineName'), '-nsip')]",
 			"type": "Microsoft.Network/publicIpAddresses",
 			"apiVersion": "2017-10-01",
-			"location": "[parameters('location')]",
+			"location": "[resourceGroup().location]",
 			"properties": {
 				"publicIpAllocationMethod": "Dynamic"
 			},
@@ -240,7 +291,7 @@
 			"name": "[parameters('networkSecurityGroupName')]",
 			"type": "Microsoft.Network/networkSecurityGroups",
 			"apiVersion": "2017-10-01",
-			"location": "[parameters('location')]",
+			"location": "[resourceGroup().location]",
 			"properties": {
 				"securityRules": [{
 						"name": "ssh-rule",
