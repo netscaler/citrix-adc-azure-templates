@@ -23,3 +23,8 @@ For production issues with the templates, please contact Citrix Support through 
 - VPX installation in Azure : https://docs.citrix.com/en-us/netscaler/12/deploying-vpx/deploy-vpx-on-azure.html
 - Citrix NetScaler 12.0 Documention : https://docs.citrix.com/en-us/netscaler/12.html 
 - Citrix NetScaler Overview : https://www.citrix.com/products/netscaler-adc/resources/netscaler-vpx.html
+
+## Legal
+Privacy Policy : http://www.citrix.com/about/legal/privacy.html
+
+Terms of use : [Citrix License](LICENSE.md)
