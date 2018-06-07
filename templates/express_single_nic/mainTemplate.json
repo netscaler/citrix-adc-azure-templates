@@ -1,6 +1,6 @@
 {
 	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-	"contentVersion": "1.0.0.0",
+	"contentVersion": "12.1.0.0",
 	"parameters": {
 		"virtualMachineName": {
 			"defaultValue": "NetScaler-VPX-Express",
@@ -10,10 +10,10 @@
 			}
 		},
 		"virtualMachineSize": {
-			"defaultValue": "Standard_DS3_v2",
+			"defaultValue": "Standard_A2",
 			"type": "String",
 			"allowedValues": [
-				"Standard_DS3_v2"
+				"Standard_A2"
 			],
 			"metadata": {
 				"description": "Size of Azure Virtual Machine."
@@ -113,27 +113,6 @@
 		"diagnosticsStorageAccountName": "[if(equals(parameters('diagnosticsStorageAccountName'), ''), concat('vpxstracct', uniqueString(resourceGroup().id)), parameters('diagnosticsStorageAccountName'))]"
 	},
 	"resources": [{
-			"type": "Microsoft.Compute/virtualMachines/extensions",
-			"name": "[concat(parameters('virtualMachineName'),'/', 'vpx-express')]",
-			"apiVersion": "2017-12-01",
-			"location": "[resourceGroup().location]",
-			"dependsOn": [
-				"[concat('Microsoft.Compute/virtualMachines/', parameters('virtualMachineName'))]"
-			],
-			"properties": {
-				"publisher": "Microsoft.OSTCExtensions",
-				"type": "CustomScriptForLinux",
-				"typeHandlerVersion": "1.5",
-				"autoUpgradeMinorVersion": true,
-				"settings": {
-					"fileUris": ["https://nsmpscript.blob.core.windows.net/custom-script/express/custom_script.py"],
-					"enableInternalDNSCheck": "false"
-				},
-				"protectedSettings": {
-					"commandToExecute": "[concat('/var/python/bin/python custom_script.py ', parameters('adminPassword'))]"
-				}
-			}
-		}, {
 			"name": "[parameters('virtualMachineName')]",
 			"type": "Microsoft.Compute/virtualMachines",
 			"apiVersion": "2017-12-01",
@@ -148,7 +127,7 @@
 					"computerName": "[parameters('virtualMachineName')]",
 					"adminUsername": "[parameters('adminUsername')]",
 					"adminPassword": "[parameters('adminPassword')]",
-					"customData": "[base64(concat('config=express;username=', parameters('adminUsername') ))]"
+					"customData": "[base64(concat( '{ \"username\": \"', parameters('adminUsername'), '\", \"vpx_config\": { \"pvt_ip_11\": \"', reference(variables('nicId')).ipConfigurations[1].properties.privateIPAddress ,'\", \"pvt_ip_12\": \"', reference(variables('nicId')).ipConfigurations[2].properties.privateIPAddress ,'\",\"subnet_11\": \"', reference(variables('subnetRef'), '2017-10-01', 'Full').properties.addressPrefix ,'\", \"subnet_12\": \"', reference(variables('subnetRef'), '2017-10-01', 'Full').properties.addressPrefix, '\", \"ns_features\": [\"LB\", \"CS\", \"SSL\", \"WL\"] }}' ))]"
 				},
 				"hardwareProfile": {
 					"vmSize": "[parameters('virtualMachineSize')]"
@@ -156,7 +135,7 @@
 				"storageProfile": {
 					"imageReference": {
 						"publisher": "citrix",
-						"offer": "netscalervpx-120",
+						"offer": "netscalervpx-121",
 						"sku": "netscalervpxexpress",
 						"version": "latest"
 					},
@@ -184,7 +163,7 @@
 			"plan": {
 				"name": "netscalervpxexpress",
 				"publisher": "citrix",
-				"product": "netscalervpx-120"
+				"product": "netscalervpx-121"
 			}
 		}, {
 			"name": "[variables('diagnosticsStorageAccountName')]",
