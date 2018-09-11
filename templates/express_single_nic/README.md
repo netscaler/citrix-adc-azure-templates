@@ -10,7 +10,7 @@ The Azure custom template deploys the VPX in a single-NIC mode. The standard Net
 
 ## Quick Launch Link
 
-[![Create NetScaler VPX Express](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fexpress_single_nic%2FmainTemplate.json)
+[![Create NetScaler VPX Express](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2FNetScaler12.0%2Ftemplates%2Fexpress_single_nic%2FmainTemplate.json)
 
 
 ## Additional Links:
