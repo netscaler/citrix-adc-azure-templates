@@ -1,0 +1,372 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "12.1.0.0",
+	"parameters": {
+		"adminUsername": {
+			"type": "String",
+			"metadata": {
+				"description": "Username for the Virtual Machines."
+			}
+		},
+		"adminPassword": {
+			"type": "SecureString",
+			"metadata": {
+				"description": "Password for the Virtual Machines."
+			}
+		},
+		"vmSize": {
+			"defaultValue": "Standard_DS3_v2",
+			"type": "String",
+			"allowedValues": [
+				"Standard_DS3_v2",
+				"Standard_DS4_v2"
+			],
+			"metadata": {
+				"description": "Size of Azure Virtual Machine."
+			}
+		},
+		"vmSku": {
+			"defaultValue": "netscalerbyol",
+			"type": "String",
+			"allowedValues": ["netscalerbyol",
+				"netscaler10standard",
+				"netscaler10enterprise",
+				"netscaler10platinum",
+				"netscaler200standard",
+				"netscaler200enterprise",
+				"netscaler200platinum",
+				"netscaler1000standard",
+				"netscaler1000enterprise",
+				"netscaler1000platinum",
+				"netscaler3000standard",
+				"netscaler3000enterprise",
+				"netscaler3000platinum"
+			],
+			"metadata": {
+				"description": "SKU of NetScaler Image."
+			}
+		},
+		"vnetName": {
+			"defaultValue": "vnet01",
+			"type": "String",
+			"metadata": {
+				"description": "Name of Virtual Network"
+			}
+		},
+		"vnetResourceGroup": {
+			"defaultValue": "",
+			"type": "String",
+			"metadata": {
+				"description": "Resource Group name of existing Virtual Network. Leave empty if Resource Group is same as current deployment."
+			}
+		},
+		"vnetNewOrExisting": {
+			"defaultValue": "new",
+			"allowedValues": [
+				"new",
+				"existing"
+			],
+			"type": "String"
+		},
+		"snetName": {
+			"defaultValue": "subnet",
+			"type": "String",
+			"metadata": {
+				"description": "Name of Subnet. Enter existing subnet name if opting for existing Virtual Network"
+			}
+		},
+		"snetAddressPrefix": {
+			"defaultValue": "10.11.0.0/24",
+			"type": "String",
+			"metadata": {
+				"description": "Value of subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
+			}
+		}
+	},
+	"variables": {
+		"vmN": "ns-vpx",
+		"nicN": "ns-vpx-nic",
+		"nsgN": "ns-vpx-nic-nsg",
+		"lbN": "alb",
+		"bePoolN": "bepool-11",
+		"probeN": "probe-11",
+		"ipConfN": "ipconf-11",
+		"alb-pipN": "alb-publicip",
+		"mgmt-pipN-suffix": "-mgmt-publicip",
+		"saN": "[concat('vpxha', uniqueString(resourceGroup().id))]",
+		"vnetRg": "[if(equals(parameters('vnetResourceGroup'), ''), resourceGroup().name,parameters('vnetResourceGroup'))]",
+		"snetRef": "[resourceId(variables('vnetRg'),'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('snetName'))]",
+		"bePoolId": "[resourceId( 'Microsoft.Network/loadBalancers/backendAddressPools', variables('lbN'), variables('bePoolN'))]",
+		"probeId": "[resourceId( 'Microsoft.Network/loadBalancers/probes', variables('lbN'), variables('probeN'))]",
+		"ipConfId": "[resourceId( 'Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('lbN'), variables('ipConfN'))]"
+	},
+	"resources": [{
+			"type": "Microsoft.Network/loadBalancers",
+			"name": "[variables('lbN')]",
+			"apiVersion": "2017-10-01",
+			"location": "[resourceGroup().location]",
+			"sku": {
+				"name": "Standard"
+			},
+			"properties": {
+				"frontendIPConfigurations": [{
+						"name": "[variables('ipConfN')]",
+						"properties": {
+							"publicIPAddress": {
+								"id": "[resourceId( 'Microsoft.Network/publicIpAddresses', variables('alb-pipN'))]"
+							}
+						}
+					}
+				],
+				"backendAddressPools": [{
+						"name": "[variables('bePoolN')]"
+					}
+				],
+				"probes": [{
+						"name": "[variables('probeN')]",
+						"properties": {
+							"protocol": "tcp",
+							"port": 9000,
+							"intervalInSeconds": 5,
+							"numberOfProbes": 2
+						}
+					}
+				],
+				"loadBalancingRules": [{
+						"name": "lbRule1",
+						"properties": {
+							"frontendIPConfiguration": {
+								"id": "[variables('ipConfId')]"
+							},
+							"frontendPort": 80,
+							"backendPort": 80,
+							"enableFloatingIP": true,
+							"protocol": "Tcp",
+							"backendAddressPool": {
+								"id": "[variables('bePoolId')]"
+							},
+							"probe": {
+								"id": "[variables('probeId')]"
+							}
+						}
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat('Microsoft.Network/publicIpAddresses/', variables('alb-pipN'))]"
+			]
+		}, {
+			"type": "Microsoft.Compute/virtualMachines",
+			"name": "[concat(variables('vmN'), copyIndex())]",
+			"zones": "[split(string(add(mod(copyIndex(),3),1)), ',')]",
+			"apiVersion": "2017-12-01",
+			"location": "[resourceGroup().location]",
+			"copy": {
+				"name": "vmcopy",
+				"count": 2
+			},
+			"plan": {
+				"name": "[parameters('vmSku')]",
+				"publisher": "citrix",
+				"product": "netscalervpx-121"
+			},
+			"properties": {
+				"osProfile": {
+					"computerName": "[concat(variables('vmN'), copyIndex())]",
+					"adminUsername": "[parameters('adminUsername')]",
+					"adminPassword": "[parameters('adminPassword')]",
+					"customData": "[base64(concat('{\"username\":\"', parameters('adminUsername'), '\",\"ha_config\":{\"peer_node\":\"', reference(concat(variables('nicN'), sub(1, copyIndex()))).ipConfigurations[0].properties.privateIPAddress ,'\"},\"vpx_config\":{\"snip_11\":\"', reference(concat(variables('nicN'), copyIndex())).ipConfigurations[1].properties.privateIPAddress ,'\",\"pvt_ip_12\":\"', reference(concat(variables('nicN'), copyIndex())).ipConfigurations[2].properties.privateIPAddress ,'\",\"subnet_11\":\"', reference(variables('snetRef'), '2017-10-01', 'Full').properties.addressPrefix ,'\",\"subnet_12\":\"', reference(variables('snetRef'), '2017-10-01', 'Full').properties.addressPrefix, '\"}}'))]"
+				},
+				"hardwareProfile": {
+					"vmSize": "[parameters('vmSize')]"
+				},
+				"storageProfile": {
+					"imageReference": {
+						"publisher": "citrix",
+						"offer": "netscalervpx-121",
+						"sku": "[parameters('vmSku')]",
+						"version": "latest"
+					},
+					"osDisk": {
+						"createOption": "fromImage",
+						"managedDisk": {
+							"storageAccountType": "Standard_LRS"
+						}
+					},
+					"dataDisks": []
+				},
+				"networkProfile": {
+					"networkInterfaces": [{
+							"id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('nicN'), copyIndex()))]",
+							"properties": {
+								"primary": true
+							}
+						}
+					]
+				},
+				"diagnosticsProfile": {
+					"bootDiagnostics": {
+						"enabled": true,
+						"storageUri": "[reference(resourceId( 'Microsoft.Storage/storageAccounts', variables('saN')), '2017-10-01').primaryEndpoints['blob']]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), copyIndex())]",
+				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), sub(1,copyIndex()))]",
+				"[concat('Microsoft.Storage/storageAccounts/', variables('saN'))]"
+			]
+		}, {
+			"type": "Microsoft.Storage/storageAccounts",
+			"name": "[variables('saN')]",
+			"apiVersion": "2017-10-01",
+			"kind": "Storage",
+			"location": "[resourceGroup().location]",
+			"sku": {
+				"name": "Standard_LRS"
+			},
+			"properties": {}
+		}, {
+			"type": "Microsoft.Network/virtualNetworks",
+			"name": "[parameters('vnetName')]",
+			"apiVersion": "2017-10-01",
+			"location": "[resourceGroup().location]",
+			"properties": {
+				"addressSpace": {
+					"addressPrefixes": [
+						"[parameters('snetAddressPrefix')]"
+					]
+				},
+				"subnets": [{
+						"name": "[parameters('snetName')]",
+						"properties": {
+							"addressPrefix": "[parameters('snetAddressPrefix')]"
+						}
+					}
+				]
+			},
+			"condition": "[equals(parameters('vnetNewOrExisting'),'new')]"
+		}, {
+			"type": "Microsoft.Network/networkInterfaces",
+			"name": "[concat(variables('nicN'), copyIndex())]",
+			"apiVersion": "2017-10-01",
+			"location": "[resourceGroup().location]",
+			"copy": {
+				"name": "niccopy",
+				"count": 2
+			},
+			"properties": {
+				"ipConfigurations": [{
+						"name": "nsip",
+						"properties": {
+							"primary": true,
+							"subnet": {
+								"id": "[variables('snetRef')]"
+							},
+							"privateIPAllocationMethod": "Dynamic",
+							"publicIpAddress": {
+								"id": "[resourceId('Microsoft.Network/publicIpAddresses', concat(variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix')))]"
+							}
+						}
+					}, {
+						"name": "vip",
+						"properties": {
+							"subnet": {
+								"id": "[variables('snetRef')]"
+							},
+							"privateIPAllocationMethod": "Dynamic",
+							"loadBalancerBackendAddressPools": [{
+									"id": "[variables('bePoolId')]"
+								}
+
+							]
+						}
+					}, {
+						"name": "snip",
+						"properties": {
+							"subnet": {
+								"id": "[variables('snetRef')]"
+							},
+							"privateIPAllocationMethod": "Dynamic"
+						}
+					}
+				],
+				"networkSecurityGroup": {
+					"id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('nsgN'), copyIndex()))]"
+				}
+			},
+			"dependsOn": [
+				"[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
+				"[concat('Microsoft.Network/publicIpAddresses/', variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix'))]",
+				"[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'), copyIndex())]",
+				"[concat('Microsoft.Network/loadBalancers/', variables('lbN'))]"
+			]
+		}, {
+			"type": "Microsoft.Network/publicIpAddresses",
+			"name": "[variables('alb-pipN')]",
+			"apiVersion": "2017-10-01",
+			"location": "[resourceGroup().location]",
+			"sku": {
+				"name": "Standard"
+			},
+			"properties": {
+				"publicIpAllocationMethod": "static",
+				"publicIpAddressVersion": "IPv4"
+			}
+		}, {
+			"type": "Microsoft.Network/publicIpAddresses",
+			"name": "[concat(variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix'))]",
+			"zones": "[split(string(add(mod(copyIndex(),3),1)), ',')]",
+			"apiVersion": "2017-10-01",
+			"location": "[resourceGroup().location]",
+			"sku": {
+				"name": "Standard"
+			},
+			"copy": {
+				"name": "ipcopy",
+				"count": 2
+			},
+			"properties": {
+				"publicIpAllocationMethod": "static",
+				"publicIpAddressVersion": "IPv4"
+			}
+		}, {
+			"type": "Microsoft.Network/networkSecurityGroups",
+			"name": "[concat(variables('nsgN'), copyIndex())]",
+			"apiVersion": "2017-10-01",
+			"location": "[resourceGroup().location]",
+			"copy": {
+				"name": "nsgcopy",
+				"count": 2
+			},
+			"properties": {
+				"securityRules": [{
+						"name": "default-allow-ssh",
+						"properties": {
+							"priority": 1000,
+							"sourceAddressPrefix": "*",
+							"protocol": "TCP",
+							"destinationPortRange": "22",
+							"access": "Allow",
+							"direction": "Inbound",
+							"sourcePortRange": "*",
+							"destinationAddressPrefix": "*"
+						}
+					}, {
+						"name": "autoscale-daemon",
+						"properties": {
+							"priority": 1001,
+							"sourceAddressPrefix": "*",
+							"protocol": "TCP",
+							"destinationPortRange": "9001",
+							"access": "Allow",
+							"direction": "Inbound",
+							"sourcePortRange": "*",
+							"destinationAddressPrefix": "*"
+						}
+					}
+				]
+			}
+		}
+	]
+}

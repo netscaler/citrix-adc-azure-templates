@@ -20,18 +20,35 @@ For understanding architecture or manual deployment steps, refer
 ### Quick Launch Link
 ---
 #### NetScaler High Availability(HA) Pair - 3 NICs 
-[![Create NetScaler High Availability(HA) Pair - 3 NICs](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_3nic%2FmainTemplate.json)
+##### &nbsp;&nbsp;&nbsp;&nbsp; using Availability Set:
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; [![Create NetScaler High Availability(HA) Pair - 3 NICs (using Availability Set)](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_3nic%2FmainTemplate.json) 
+
+##### &nbsp;&nbsp;&nbsp;&nbsp; using Availability Zones:
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; [![Create NetScaler High Availability(HA) Pair - 3 NICs (using Availability Zones)](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_3nic_zones%2FmainTemplate.json)
+&nbsp;
 
 ---
 #### NetScaler High Availability(HA) Pair with autoscale - 3 NICs
-[![Create NetScaler High Availability(HA) Pair with autoscale - 3 NICs](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_3nic_backendAutoscale%2FmainTemplate.json)
+##### &nbsp;&nbsp;&nbsp;&nbsp; using Availability Set:
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; [![Create NetScaler High Availability(HA) Pair with autoscale - 3 NICs (using Availability Set)](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_3nic_backendAutoscale%2FmainTemplate.json)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp; using Availability Zones:
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; [![Create NetScaler High Availability(HA) Pair with autoscale - 3 NICs (using Availability Zones)](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_3nic_backendAutoscale_zones%2FmainTemplate.json)
 
 ---
 #### NetScaler High Availability(HA) Pair - 2 NICs
-[![Create NetScaler High Availability(HA) Pair - 2 NICs](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_2nic%2FmainTemplate.json)
+##### &nbsp;&nbsp;&nbsp;&nbsp; using Availability Set:
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; [![Create NetScaler High Availability(HA) Pair - 2 NICs (using Availability Set)](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_2nic%2FmainTemplate.json)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp; using Availability Zones:
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; [![Create NetScaler High Availability(HA) Pair - 2 NICs (using Availability Zones)](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_2nic_zones%2FmainTemplate.json)
 
 ---
 #### NetScaler High Availability(HA) Pair - 1 NIC
-[![Create NetScaler High Availability(HA) Pair - 1 NIC](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_1nic%2FmainTemplate.json)
+##### &nbsp;&nbsp;&nbsp;&nbsp; using Availability Set:
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; [![Create NetScaler High Availability(HA) Pair - 1 NIC (using Availability Set)](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_1nic%2FmainTemplate.json)
+
+##### &nbsp;&nbsp;&nbsp;&nbsp; using Availability Zones:
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; [![Create NetScaler High Availability(HA) Pair - 1 NIC (using Availability Zones)](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_1nic_zones%2FmainTemplate.json)
 
 ---
