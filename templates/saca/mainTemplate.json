@@ -1,0 +1,2088 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "12.1.0.0",
+  "parameters": {
+    "citrixADCUsername": {
+      "defaultValue": "defaultUser",
+      "type": "String",
+      "metadata": {
+        "description": "Username for Citrix ADC Virtual Machines."
+      }
+    },
+    "citrixADCPassword": {
+      "type": "SecureString",
+      "metadata": {
+        "description": "Password for Citrix ADC Virtual Machines."
+      }
+    },
+    "citrixADCVmSize": {
+      "defaultValue": "Standard_DS3_v2",
+      "type": "String",
+      "allowedValues": [
+        "Standard_DS3_v2",
+        "Standard_DS4_v2",
+        "Standard_D3_v2",
+        "Standard_D4_v2"
+      ],
+      "metadata": {
+        "description": "Size of Citrix ADC Virtual Machines."
+      }
+    },
+    "citrixADCVmSku": {
+      "defaultValue": "netscalerbyol",
+      "type": "String",
+      "allowedValues": ["netscalerbyol",
+        "netscaler10standard",
+        "netscaler10enterprise",
+        "netscaler10platinum",
+        "netscaler200standard",
+        "netscaler200enterprise",
+        "netscaler200platinum",
+        "netscaler1000standard",
+        "netscaler1000enterprise",
+        "netscaler1000platinum",
+        "netscaler3000standard",
+        "netscaler3000enterprise",
+        "netscaler3000platinum"
+      ],
+      "metadata": {
+        "description": "SKU of Citrix ADC Image."
+      }
+    },
+    "linuxJumpBoxUsername": {
+      "defaultValue": "defaultUser",
+      "type": "String",
+      "metadata": {
+        "description": "Username for linux jump box present in management subnet."
+      }
+    },
+    "linuxJumpBoxPassword": {
+      "type": "SecureString",
+      "metadata": {
+        "description": "Password for linux jump box present in management subnet."
+      }
+    },
+    "linuxJumpBoxVmSize": {
+      "defaultValue": "Standard_D2s_v3",
+      "type": "String",
+      "allowedValues": [
+        "Standard_A2_v2",
+        "Standard_D2_v2",
+        "Standard_D2s_v3",
+        "Standard_D3_v2",
+        "Standard_D4s_v3"
+      ],
+      "metadata": {
+        "description": "Size of linux jump box present in management subnet."
+      }
+    },
+    "linuxJumpBoxVmSku": {
+      "defaultValue": "18.04-LTS",
+      "type": "String",
+      "allowedValues": ["18.04-LTS",
+        "16.04-LTS"
+      ],
+      "metadata": {
+        "description": "sku of Ubuntu Image for linux jump box present in management subnet."
+      }
+    },
+    "ipsUsername": {
+      "defaultValue": "defaultUser",
+      "type": "String",
+      "metadata": {
+        "description": "Username for IPS Virtual Machine."
+      }
+    },
+    "ipsPassword": {
+      "type": "SecureString",
+      "metadata": {
+        "description": "Password for IPS Virtual Machine."
+      }
+    },
+    "ipsVmSize": {
+      "defaultValue": "Standard_DS3_v2",
+      "type": "String",
+      "allowedValues": [
+        "Standard_DS3_v2",
+        "Standard_DS4_v2",
+        "Standard_D3_v2",
+        "Standard_D4_v2"
+      ],
+      "metadata": {
+        "description": "Size of IPS Virtual Machine."
+      }
+    },
+    "ipsVmSku": {
+      "defaultValue": "16.04-LTS",
+      "type": "String",
+      "allowedValues": [
+        "16.04-LTS"
+      ],
+      "metadata": {
+        "description": "sku of IPS Virtual Machine."
+      }
+    },
+    "windowsJumpBoxUsername": {
+      "defaultValue": "defaultUser",
+      "type": "String",
+      "metadata": {
+        "description": "Username for windows jump box present in management subnet."
+      }
+    },
+    "windowsJumpBoxPassword": {
+      "type": "SecureString",
+      "metadata": {
+        "description": "Password for windows jump box present in management subnet."
+      }
+    },
+    "windowsJumpBoxVmSize": {
+      "defaultValue": "Standard_D2s_v3",
+      "type": "String",
+      "allowedValues": [
+        "Standard_A2_v2",
+        "Standard_D2_v2",
+        "Standard_D2s_v3",
+        "Standard_D3_v2",
+        "Standard_D4s_v3"
+      ],
+      "metadata": {
+        "description": "Size of windows jump box present in management subnet."
+      }
+    },
+    "windowsJumpBoxVmSku": {
+      "defaultValue": "2016-Datacenter",
+      "type": "String",
+      "allowedValues": ["2016-Datacenter",
+        "2019-Datacenter",
+        "2012-R2-Datacenter"
+      ],
+      "metadata": {
+        "description": "sku of windows server Image for windows jump box present in management subnet."
+      }
+    },
+    "managedDiskStorageAccountType": {
+      "defaultValue": "Premium_LRS",
+      "type": "string",
+      "allowedValues": [
+        "Premium_LRS",
+        "Standard_LRS"
+      ]
+    },
+    "vnetName": {
+      "defaultValue": "boundary-vnet",
+      "type": "String",
+      "metadata": {
+        "description": "Name of Virtual Network"
+      }
+    },
+    "vnetAddressPrefixBestMatch": {
+      "defaultValue": "10.100.0.0/22",
+      "type": "String",
+      "metadata": {
+        "description": "Best match for Entire virtual network's address prefix in CIDR form visible to IPS and ADCs."
+      }
+    },
+    "externalSubnetName-clientside": {
+      "defaultValue": "external_client_subnet",
+      "type": "String",
+      "metadata": {
+        "description": "Name of external (untrusted) client side subnet."
+      }
+    },
+    "externalSubnetAddressPrefix-clientside": {
+      "defaultValue": "10.100.0.0/28",
+      "type": "String",
+      "metadata": {
+        "description": "Value of external (untrusted) client side subnet in CIDR form."
+      }
+    },
+    "externalAdcGatewayIp-clientside": {
+      "defaultValue": "10.100.0.1",
+      "type": "String",
+      "metadata": {
+        "description": "Gateway IP for external (untrusted) client side subnet."
+      }
+    },
+    "externalSubnetName-serverside": {
+      "defaultValue": "external_server_subnet",
+      "type": "String",
+      "metadata": {
+        "description": "Name of external (untrusted) server side subnet."
+      }
+    },
+    "externalSubnetAddressPrefix-serverside": {
+      "defaultValue": "10.100.0.16/28",
+      "type": "String",
+      "metadata": {
+        "description": "Value of external (untrusted) server side subnet in CIDR form."
+      }
+    },
+    "externalAdcIp-serverside": {
+      "defaultValue": "10.100.0.22",
+      "type": "String",
+      "metadata": {
+        "description": "Server side IP for External ADC."
+      }
+    },
+    "externalAdcGatewayIp-serverside": {
+      "defaultValue": "10.100.0.17",
+      "type": "String",
+      "metadata": {
+        "description": "Gateway IP for external (untrusted) server side subnet."
+      }
+    },
+    "ipsSubnetName-clientside": {
+      "defaultValue": "intrusion_prevention_system_client_subnet",
+      "type": "String",
+      "metadata": {
+        "description": "Name of ips's client side subnet."
+      }
+    },
+    "ipsSubnetAddressPrefix-clientside": {
+      "defaultValue": "10.100.0.32/28",
+      "type": "String",
+      "metadata": {
+        "description": "Value of ips's client side subnet in CIDR form."
+      }
+    },
+    "ipsClientsideIp": {
+      "defaultValue": "10.100.0.38",
+      "type": "String",
+      "metadata": {
+        "description": "Client side IP for IPS (Intrusion Prevention System)."
+      }
+    },
+    "ipsClientsideGatewayIp": {
+      "defaultValue": "10.100.0.33",
+      "type": "String",
+      "metadata": {
+        "description": "Gateway IP for ips's client side subnet."
+      }
+    },
+    "ipsSubnetName-serverside": {
+      "defaultValue": "intrusion_prevention_system_server_subnet",
+      "type": "String",
+      "metadata": {
+        "description": "Name of ips's server side subnet."
+      }
+    },
+    "ipsSubnetAddressPrefix-serverside": {
+      "defaultValue": "10.100.1.0/28",
+      "type": "String",
+      "metadata": {
+        "description": "Value of ips's server side subnet in CIDR form."
+      }
+    },
+    "ipsServersideIp": {
+      "defaultValue": "10.100.1.6",
+      "type": "String",
+      "metadata": {
+        "description": "Server side IP for IPS (Intrusion Prevention System)."
+      }
+    },
+    "ipsServersideGatewayIp": {
+      "defaultValue": "10.100.1.1",
+      "type": "String",
+      "metadata": {
+        "description": "Gateway IP for ips's server side subnet."
+      }
+    },
+    "internalSubnetName-clientside": {
+      "defaultValue": "internal_client_subnet",
+      "type": "String",
+      "metadata": {
+        "description": "Name of internal (trusted) client side subnet."
+      }
+    },
+    "internalSubnetAddressPrefix-clientside": {
+      "defaultValue": "10.100.1.16/28",
+      "type": "String",
+      "metadata": {
+        "description": "Value of internal (trusted) client side subnet in CIDR form."
+      }
+    },
+    "internalSubnetMask-clientside": {
+      "defaultValue": "255.255.255.240",
+      "allowedValues": ["0.0.0.0",
+        "128.0.0.0",
+        "192.0.0.0",
+        "224.0.0.0",
+        "240.0.0.0",
+        "248.0.0.0",
+        "252.0.0.0",
+        "254.0.0.0",
+        "255.0.0.0",
+        "255.128.0.0",
+        "255.192.0.0",
+        "255.224.0.0",
+        "255.240.0.0",
+        "255.248.0.0",
+        "255.252.0.0",
+        "255.254.0.0",
+        "255.255.0.0",
+        "255.255.128.0",
+        "255.255.192.0",
+        "255.255.224.0",
+        "255.255.240.0",
+        "255.255.248.0",
+        "255.255.252.0",
+        "255.255.254.0",
+        "255.255.255.0",
+        "255.255.255.128",
+        "255.255.255.192",
+        "255.255.255.224",
+        "255.255.255.240",
+        "255.255.255.248",
+        "255.255.255.252",
+        "255.255.255.254",
+        "255.255.255.255"
+      ],
+      "type": "String",
+      "metadata": {
+        "description": "Value of internal (trusted) client side subnet in CIDR form."
+      }
+    },
+    "internalAlbIp": {
+      "defaultValue": "10.100.1.22",
+      "type": "String",
+      "metadata": {
+        "description": "Client/Server side IP for internal ADC."
+      }
+    },
+    "internalAdcGatewayIp-clientside": {
+      "defaultValue": "10.100.1.17",
+      "type": "String",
+      "metadata": {
+        "description": "Gateway IP for internal (trusted) client side subnet."
+      }
+    },
+    "internalSubnetName-serverside": {
+      "defaultValue": "internal_subnet_server",
+      "type": "String",
+      "metadata": {
+        "description": "Name of internal (trusted) server side subnet."
+      }
+    },
+    "internalSubnetAddressPrefix-serverside": {
+      "defaultValue": "10.100.1.32/27",
+      "type": "String",
+      "metadata": {
+        "description": "Value of internal (trusted) server side subnet in CIDR form."
+      }
+    },
+    "managementSubnetName": {
+      "defaultValue": "management_subnet",
+      "type": "String",
+      "metadata": {
+        "description": "Name of management subnet."
+      }
+    },
+    "managementSubnetAddressPrefix": {
+      "defaultValue": "10.100.1.128/25",
+      "type": "String",
+      "metadata": {
+        "description": "Value of management subnet in CIDR form."
+      }
+    },
+    "managementSubnetGatewayIp": {
+      "defaultValue": "10.100.1.129",
+      "type": "String",
+      "metadata": {
+        "description": "Gateway IP for  management subnet."
+      }
+    },
+    "vdmsSubnetName": {
+      "defaultValue": "vdms_subnet",
+      "type": "String",
+      "metadata": {
+        "description": "Name of VDMS subnet."
+      }
+    },
+    "vdmsSubnetAddressPrefix": {
+      "defaultValue": "10.100.2.0/23",
+      "type": "String",
+      "metadata": {
+        "description": "Value of VDMS subnet in CIDR form."
+      }
+    }
+  },
+  "variables": {
+    "cidrToMask": {
+      "0": "0.0.0.0",
+      "1": "128.0.0.0",
+      "2": "192.0.0.0",
+      "3": "224.0.0.0",
+      "4": "240.0.0.0",
+      "5": "248.0.0.0",
+      "6": "252.0.0.0",
+      "7": "254.0.0.0",
+      "8": "255.0.0.0",
+      "9": "255.128.0.0",
+      "10": "255.192.0.0",
+      "11": "255.224.0.0",
+      "12": "255.240.0.0",
+      "13": "255.248.0.0",
+      "14": "255.252.0.0",
+      "15": "255.254.0.0",
+      "16": "255.255.0.0",
+      "17": "255.255.128.0",
+      "18": "255.255.192.0",
+      "19": "255.255.224.0",
+      "20": "255.255.240.0",
+      "21": "255.255.248.0",
+      "22": "255.255.252.0",
+      "23": "255.255.254.0",
+      "24": "255.255.255.0",
+      "25": "255.255.255.128",
+      "26": "255.255.255.192",
+      "27": "255.255.255.224",
+      "28": "255.255.255.240",
+      "29": "255.255.255.248",
+      "30": "255.255.255.252",
+      "31": "255.255.255.254",
+      "32": "255.255.255.255"
+    },
+
+    "TODO-internalSubnetMask-clientside": "might be possible to do. it will remove one extra unnecessary parameter",
+    "internalSubnetMask-clientside": "[parameters('internalSubnetMask-clientside')]",
+    "networkInterfacesApiVersion": "2018-04-01",
+    "virtualMachinesApiVersion": "2018-10-01",
+    "networkSecurityGroupsApiVersion": "2018-08-01",
+    "loadBalancersApiVersion": "2018-08-01",
+    "publicIpAddressesApiVersion": "2018-08-01",
+    "availabilitySetsApiVersion": "2018-10-01",
+    "routeTablesApiVersion": "2018-08-01",
+    "virtualNetworksApiVersion": "2018-08-01",
+    "storageAccountsApiVersion": "2018-07-01",
+
+    "storageAccountName": "[concat('stracct', uniqueString(resourceGroup().id))]",
+    "vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
+    "managementSubnetReference": "[concat(variables('vnetId'), '/subnets/', parameters('managementSubnetName'))]",
+
+    "linuxJumpBoxName": "Linux-JumpBox",
+    "linuxJumpBoxNicName": "Linux-Box-NIC-management",
+    "linuxJumpBoxNsgName": "Linux-Box-NSG-management",
+
+    "windowsJumpBoxName": "Windows-JumpBox",
+    "windowsJumpBoxNicName": "Windows-Box-NIC-management",
+    "windowsJumpBoxNsgName": "Windows-Box-NSG-management",
+
+    "ipsVmName": "IPS-VM",
+    "ipsNicNamePrefix": "IPS-NIC-",
+    "ipsNsgNamePrefix": "IPS-NSG-",
+    "ipsAvailabilitySetName": "IPS-availability-set",
+    "ipsSubnetReference-clientside": "[concat(variables('vnetId'), '/subnets/', parameters('ipsSubnetName-clientside'))]",
+    "ipsSubnetReference-serverside": "[concat(variables('vnetId'), '/subnets/', parameters('ipsSubnetName-serverside'))]",
+
+    "internalVpxNamePrefix": "Citrix-ADC-internal-VPX-",
+    "internalNicNamePrefix": "Citrix-ADC-internal-VPX-NIC-",
+    "internalNsgNamePrefix": "Citrix-ADC-internal-VPX-NSG-",
+    "internalAlbName": "Citrix-ADC-internal-Azure-load-balancer",
+    "internalAlbBackendRuleName": "Citrix-ADC-internal-load-balancer-backend-rule",
+    "internalAlbHealthProbeRuleName": "Citrix-ADC-internal-load-balancer-health-probe-rule",
+    "internalAlbIpConfigRuleName": "Citrix-ADC-internal-load-balancer-frontend-IP-configuration-rule",
+    "internalAvailabilitySetName": "Citrix-ADC-internal-availability-set",
+    "internalSubnetReference-clientside": "[concat(variables('vnetId'), '/subnets/', parameters('internalSubnetName-clientside'))]",
+    "internalSubnetReference-serverside": "[concat(variables('vnetId'), '/subnets/', parameters('internalSubnetName-serverside'))]",
+    "internalAlbId": "[resourceId( 'Microsoft.Network/loadBalancers', variables('internalAlbName'))]",
+    "internalAlbBackendRuleId": "[concat(variables('internalAlbId'),'/backendAddressPools/', variables('internalAlbBackendRuleName'))]",
+    "internalAlbHealthProbeRuleId": "[concat(variables('internalAlbId'),'/probes/', variables('internalAlbHealthProbeRuleName'))]",
+    "internalAlbIpConfigRuleId": "[concat(variables('internalAlbId'),'/frontendIpConfigurations/', variables('internalAlbIpConfigRuleName'))]",
+
+    "externalVpxNamePrefix": "Citrix-ADC-external-VPX-",
+    "externalNicNamePrefix": "Citrix-ADC-external-VPX-NIC-",
+    "externalNsgNamePrefix": "Citrix-ADC-external-VPX-NSG-",
+    "externalAlbName": "Citrix-ADC-external-Azure-load-balancer",
+    "externalAlbpublicIp1Name": "[concat(variables('externalAlbName'),'-public-ip-1')]",
+    "externalAlbpublicIp2Name": "[concat(variables('externalAlbName'),'-public-ip-2')]",
+    "externalAlbBackendRuleName": "Citrix-ADC-external-load-balancer-backend-rule",
+    "externalAlbHealthProbeRuleName": "Citrix-ADC-external-load-balancer-health-probe-rule",
+    "externalAlbIpConfigRuleName": "Citrix-ADC-external-load-balancer-frontend-IP-configuration-rule",
+    "externalAvailabilitySetName": "Citrix-ADC-external-availability-set",
+    "externalSubnetReference-clientside": "[concat(variables('vnetId'), '/subnets/', parameters('externalSubnetName-clientside'))]",
+    "externalSubnetReference-serverside": "[concat(variables('vnetId'), '/subnets/', parameters('externalSubnetName-serverside'))]",
+    "externalAlbId-clientside": "[resourceId( 'Microsoft.Network/loadBalancers', concat(variables('externalAlbName'), '-clientside'))]",
+    "externalAlbBackendRuleId-clientside": "[concat(variables('externalAlbId-clientside'),'/backendAddressPools/', variables('externalAlbBackendRuleName'), '-clientside')]",
+    "externalAlbHealthProbeRuleId-clientside": "[concat(variables('externalAlbId-clientside'),'/probes/', variables('externalAlbHealthProbeRuleName'), '-clientside')]",
+    "externalAlbIpConfigRuleId-clientside": "[concat(variables('externalAlbId-clientside'),'/frontendIpConfigurations/', variables('externalAlbIpConfigRuleName'), '-clientside')]",
+    "externalAlbIpConfigRuleId-jumpBoxes": "[concat(variables('externalAlbId-clientside'),'/frontendIpConfigurations/', variables('externalAlbIpConfigRuleName'), '-jumpBoxes')]",
+    "externalAlbId-serverside": "[resourceId( 'Microsoft.Network/loadBalancers', concat(variables('externalAlbName'), '-serverside'))]",
+    "externalAlbBackendRuleId-serverside": "[concat(variables('externalAlbId-serverside'),'/backendAddressPools/', variables('externalAlbBackendRuleName'), '-serverside')]",
+    "externalAlbHealthProbeRuleId-serverside": "[concat(variables('externalAlbId-serverside'),'/probes/', variables('externalAlbHealthProbeRuleName'), '-serverside')]",
+    "externalAlbIpConfigRuleId-serverside": "[concat(variables('externalAlbId-serverside'),'/frontendIpConfigurations/', variables('externalAlbIpConfigRuleName'), '-serverside')]",
+
+    "tempAlbName": "Temporary-ALB-ForSetup",
+    "tempAlbPublicIpName": "Temporary-PublicIp-ForSetup",
+    "tempAlbBackendRuleName": "Temporary-ALB-ForSetup-frontend",
+    "tempAlbIpConfigRuleName": "Temporary-ALB-ForSetup-backend",
+    "tempAlbNatRuleName": "Temporary-ALB-ForSetup-SSHLinuxJumpBox",
+    "tempAlbId": "[resourceId( 'Microsoft.Network/loadBalancers', variables('tempAlbName'))]",
+    "tempAlbBackendRuleId": "[concat(variables('tempAlbId'),'/backendAddressPools/', variables('tempAlbBackendRuleName'))]",
+    "tempAlbIpConfigRuleId": "[concat(variables('tempAlbId'),'/frontendIpConfigurations/', variables('tempAlbIpConfigRuleName'))]",
+    "tempAlbNatRuleId": "[concat(variables('tempAlbId'),'/inboundNatRules/', variables('tempAlbNatRuleName'))]"
+  },
+  "resources": [{
+      "type": "Microsoft.Network/loadBalancers",
+      "name": "[variables('tempAlbName')]",
+      "apiVersion": "[variables('loadBalancersApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "frontendIPConfigurations": [{
+            "name": "[variables('tempAlbIpConfigRuleName')]",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId( 'Microsoft.Network/publicIpAddresses', variables('tempAlbPublicIpName'))]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [{
+            "name": "[variables('tempAlbBackendRuleName')]"
+          }
+        ],
+        "inboundNatRules": [{
+            "name": "[variables('tempAlbNatRuleName')]",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('tempAlbIpConfigRuleId')]"
+              },
+              "frontendPort": 22,
+              "backendPort": 22,
+              "enableFloatingIP": false,
+              "protocol": "Tcp"
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIpAddresses/', variables('tempAlbPublicIpName'))]"
+      ]
+    }, {
+      "type": "Microsoft.Network/publicIpAddresses",
+      "name": "[variables('tempAlbPublicIpName')]",
+      "apiVersion": "[variables('publicIpAddressesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIpAllocationMethod": "Static"
+      }
+    }, {
+      "type": "Microsoft.Network/routeTables",
+      "name": "externalSubnetRouteTable-clientside",
+      "apiVersion": "[variables('routeTablesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "disableBgpRoutePropagation": false,
+        "routes": [{
+            "name": "outsideVnet-towardsInternet",
+            "properties": {
+              "addressPrefix": "0.0.0.0/0",
+              "nextHopType": "Internet"
+            }
+          }, {
+            "name": "insideVnet-notAllowed",
+            "properties": {
+              "addressPrefix": "[parameters('vnetAddressPrefixBestMatch')]",
+              "nextHopType": "None"
+            }
+          }
+        ]
+      }
+    }, {
+      "type": "Microsoft.Network/routeTables",
+      "name": "externalSubnetRouteTable-serverside",
+      "apiVersion": "[variables('routeTablesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "disableBgpRoutePropagation": false,
+        "routes": [{
+            "name": "toInternalSubnet-towardsIps",
+            "properties": {
+              "addressPrefix": "[parameters('internalSubnetAddressPrefix-clientside')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[parameters('ipsClientsideIp')]"
+            }
+          }, {
+            "name": "insideVnet-towardsIps",
+            "properties": {
+              "addressPrefix": "[parameters('vnetAddressPrefixBestMatch')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[parameters('ipsClientsideIp')]"
+            }
+          }, {
+            "name": "outsideVnet-towardsInternet",
+            "properties": {
+              "addressPrefix": "0.0.0.0/0",
+              "nextHopType": "None"
+            }
+          }
+        ]
+      }
+    }, {
+      "type": "Microsoft.Network/routeTables",
+      "name": "ipsSubnetRouteTable-clientside",
+      "apiVersion": "[variables('routeTablesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "disableBgpRoutePropagation": false,
+        "routes": [{
+            "name": "outsideVnet-towardsExternalAdc",
+            "properties": {
+              "addressPrefix": "0.0.0.0/0",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[parameters('externalAdcIp-serverside')]"
+            }
+          }, {
+            "name": "insideVnet-towardsExternalAdc",
+            "properties": {
+              "addressPrefix": "[parameters('vnetAddressPrefixBestMatch')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[parameters('externalAdcIp-serverside')]"
+            }
+          }
+        ]
+      }
+    }, {
+      "type": "Microsoft.Network/routeTables",
+      "name": "ipsSubnetRouteTable-serverside",
+      "apiVersion": "[variables('routeTablesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "disableBgpRoutePropagation": false,
+        "routes": [{
+            "name": "insideVnet-towardsInternalAdc",
+            "properties": {
+              "addressPrefix": "[parameters('vnetAddressPrefixBestMatch')]",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[parameters('internalAlbIp')]"
+            }
+          }, {
+            "name": "outsideVnet-towardsInternet",
+            "properties": {
+              "addressPrefix": "0.0.0.0/0",
+              "nextHopType": "None"
+            }
+          }
+        ]
+      }
+    }, {
+      "type": "Microsoft.Network/routeTables",
+      "name": "internalSubnetRouteTable-clientside",
+      "apiVersion": "[variables('routeTablesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "disableBgpRoutePropagation": false,
+        "routes": [{
+            "name": "outsideVnet-towardsIps",
+            "properties": {
+              "addressPrefix": "0.0.0.0/0",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[parameters('ipsServersideIp')]"
+            }
+          }
+        ]
+      }
+    }, {
+      "type": "Microsoft.Network/routeTables",
+      "name": "securedSubnetRouteTable",
+      "apiVersion": "[variables('routeTablesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "disableBgpRoutePropagation": false,
+        "routes": [{
+            "name": "outsideVnet-towardsAdc",
+            "properties": {
+              "addressPrefix": "0.0.0.0/0",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "[parameters('internalAlbIp')]"
+            }
+          }
+        ]
+      }
+    }, {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[parameters('vnetName')]",
+      "apiVersion": "[variables('virtualNetworksApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('vnetAddressPrefixBestMatch')]"
+          ]
+        },
+        "subnets": [{
+            "name": "[parameters('managementSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('managementSubnetAddressPrefix')]"
+            }
+          }, {
+            "name": "[parameters('externalSubnetName-clientside')]",
+            "properties": {
+              "addressPrefix": "[parameters('externalSubnetAddressPrefix-clientside')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', 'externalSubnetRouteTable-clientside')]"
+              }
+            }
+          }, {
+            "name": "[parameters('externalSubnetName-serverside')]",
+            "properties": {
+              "addressPrefix": "[parameters('externalSubnetAddressPrefix-serverside')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', 'externalSubnetRouteTable-serverside')]"
+              }
+            }
+          }, {
+            "name": "[parameters('ipsSubnetName-clientside')]",
+            "properties": {
+              "addressPrefix": "[parameters('ipsSubnetAddressPrefix-clientside')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', 'ipsSubnetRouteTable-clientside')]"
+              }
+            }
+          }, {
+            "name": "[parameters('ipsSubnetName-serverside')]",
+            "properties": {
+              "addressPrefix": "[parameters('ipsSubnetAddressPrefix-serverside')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', 'ipsSubnetRouteTable-serverside')]"
+              }
+            }
+          }, {
+            "name": "[parameters('internalSubnetName-clientside')]",
+            "properties": {
+              "addressPrefix": "[parameters('internalSubnetAddressPrefix-clientside')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', 'internalSubnetRouteTable-clientside')]"
+              }
+            }
+          }, {
+            "name": "[parameters('internalSubnetName-serverside')]",
+            "properties": {
+              "addressPrefix": "[parameters('internalSubnetAddressPrefix-serverside')]"
+            }
+          }, {
+            "name": "[parameters('vdmsSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('vdmsSubnetAddressPrefix')]",
+              "routeTable": {
+                "id": "[resourceId('Microsoft.Network/routeTables', 'securedSubnetRouteTable')]"
+              }
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/routeTables', 'securedSubnetRouteTable')]",
+        "[resourceId('Microsoft.Network/routeTables', 'externalSubnetRouteTable-clientside')]",
+        "[resourceId('Microsoft.Network/routeTables', 'externalSubnetRouteTable-serverside')]",
+        "[resourceId('Microsoft.Network/routeTables', 'ipsSubnetRouteTable-clientside')]",
+        "[resourceId('Microsoft.Network/routeTables', 'ipsSubnetRouteTable-serverside')]",
+        "[resourceId('Microsoft.Network/routeTables', 'internalSubnetRouteTable-clientside')]"
+      ]
+    }, {
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('storageAccountName')]",
+      "apiVersion": "[variables('storageAccountsApiVersion')]",
+      "kind": "Storage",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "properties": {}
+    }, {
+      "name": "[variables('linuxJumpBoxName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "[variables('virtualMachinesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('linuxJumpBoxNicName'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('linuxJumpBoxVmSize')]"
+        },
+        "storageProfile": {
+          "osDisk": {
+            "createOption": "fromImage",
+            "managedDisk": {
+              "storageAccountType": "[parameters('managedDiskStorageAccountType')]"
+            }
+          },
+          "imageReference": {
+            "publisher": "Canonical",
+            "offer": "UbuntuServer",
+            "sku": "[parameters('linuxJumpBoxVmSku')]",
+            "version": "latest"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [{
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('linuxJumpBoxNicName'))]"
+            }
+          ]
+        },
+        "osProfile": {
+          "computerName": "[variables('linuxJumpBoxName')]",
+          "adminUsername": "[parameters('linuxJumpBoxUsername')]",
+          "adminPassword": "[parameters('linuxJumpBoxPassword')]"
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[reference(resourceId( 'Microsoft.Storage/storageAccounts', variables('storageAccountName')), variables('storageAccountsApiVersion')).primaryEndpoints['blob']]"
+          }
+        }
+      }
+    }, {
+      "name": "[variables('linuxJumpBoxNicName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "[variables('networkInterfacesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('linuxJumpBoxNsgName'))]",
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
+        "[concat('Microsoft.Network/loadBalancers/', variables('tempAlbName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [{
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[variables('internalSubnetReference-serverside')]"
+              },
+              "privateIPAllocationMethod": "Dynamic",
+              "loadBalancerBackendAddressPools": [{
+                  "id": "[variables('tempAlbBackendRuleId')]"
+                }
+              ],
+              "loadBalancerInboundNatRules": [{
+                  "id": "[variables('tempAlbNatRuleId')]"
+                }
+              ]
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', variables('linuxJumpBoxNsgName'))]"
+        }
+      }
+    }, {
+      "name": "[variables('linuxJumpBoxNsgName')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "[variables('networkSecurityGroupsApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [{
+            "name": "default-allow-ssh",
+            "properties": {
+              "priority": 4002,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "22",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    }, {
+      "name": "[variables('windowsJumpBoxName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "apiVersion": "[variables('virtualMachinesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', variables('windowsJumpBoxNicName'))]"
+      ],
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('windowsJumpBoxVmSize')]"
+        },
+        "storageProfile": {
+          "osDisk": {
+            "createOption": "fromImage",
+            "managedDisk": {
+              "storageAccountType": "[parameters('managedDiskStorageAccountType')]"
+            }
+          },
+          "imageReference": {
+            "publisher": "MicrosoftWindowsServer",
+            "offer": "WindowsServer",
+            "sku": "[parameters('windowsJumpBoxVmSku')]",
+            "version": "latest"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [{
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('windowsJumpBoxNicName'))]"
+            }
+          ]
+        },
+        "osProfile": {
+          "computerName": "[variables('windowsJumpBoxName')]",
+          "adminUsername": "[parameters('windowsJumpBoxUsername')]",
+          "adminPassword": "[parameters('windowsJumpBoxPassword')]",
+          "windowsConfiguration": {
+            "enableAutomaticUpdates": true,
+            "provisionVmAgent": true
+          }
+        },
+        "licenseType": "Windows_Server",
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[reference(resourceId( 'Microsoft.Storage/storageAccounts', variables('storageAccountName')), variables('storageAccountsApiVersion')).primaryEndpoints['blob']]"
+          }
+        }
+      }
+    }, {
+      "name": "[variables('windowsJumpBoxNicName')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "apiVersion": "[variables('networkInterfacesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('windowsJumpBoxNsgName'))]",
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]"
+      ],
+      "properties": {
+        "ipConfigurations": [{
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[variables('internalSubnetReference-serverside')]"
+              },
+              "privateIPAllocationMethod": "Dynamic"
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', variables('windowsJumpBoxNsgName'))]"
+        }
+      }
+    }, {
+      "name": "[variables('windowsJumpBoxNsgName')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "[variables('networkSecurityGroupsApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [{
+            "name": "RDP",
+            "properties": {
+              "priority": 4003,
+              "protocol": "TCP",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "3389"
+            }
+          }
+        ]
+      }
+    }, {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('ipsAvailabilitySetName')]",
+      "apiVersion": "[variables('availabilitySetsApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "platformFaultDomainCount": "2",
+        "platformUpdateDomainCount": "2"
+      },
+      "sku": {
+        "name": "Aligned"
+      }
+    }, {
+      "name": "[variables('ipsVmName')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[variables('virtualMachinesApiVersion')]",
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "[parameters('ipsVmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[variables('ipsVmName')]",
+          "adminUsername": "[parameters('ipsUsername')]",
+          "adminPassword": "[parameters('ipsPassword')]",
+          "customData": "[base64(concat('#cloud-config\nwrite_files:\n\n - path: /etc/network/interfaces\n   permissions: \"0644\"\n   owner: root:root\n   content: |\n      auto lo\n      iface lo inet loopback\n\n      auto eth0\n      iface eth0 inet dhcp\n\n      auto eth1\n      iface eth1 inet dhcp\n         \n\n      auto eth2\n      iface eth2 inet dhcp\n\n      up route add -net ', parameters('externalSubnetAddressPrefix-serverside'),' gw ', parameters('ipsClientsideGatewayIp'), '\n      up route add -net ', parameters('internalSubnetAddressPrefix-clientside'),' gw ', parameters('ipsServersideGatewayIp'), '\n\n - path: /etc/sysctl.conf\n   permissions: \"0644\"\n   owner: root:root\n   content: |\n      net.ipv4.ip_forward=1\n\nruncmd:\n  - service networking restart\n  - sysctl --system\n'))]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "Canonical",
+            "offer": "UbuntuServer",
+            "sku": "[parameters('ipsVmSku')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "managedDisk": {
+              "storageAccountType": "[parameters('managedDiskStorageAccountType')]"
+            }
+          },
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [{
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('ipsNicNamePrefix'), 'management'))]",
+              "properties": {
+                "primary": true
+              }
+            }, {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('ipsNicNamePrefix'), 'clientside'))]",
+              "properties": {
+                "primary": false
+              }
+            }, {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('ipsNicNamePrefix'), 'serverside'))]",
+              "properties": {
+                "primary": false
+              }
+            }
+          ]
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[reference(resourceId( 'Microsoft.Storage/storageAccounts', variables('storageAccountName')), variables('storageAccountsApiVersion')).primaryEndpoints['blob']]"
+          }
+        },
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('ipsAvailabilitySetName'))]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('ipsNicNamePrefix'), 'management'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('ipsNicNamePrefix'), 'clientside'))]",
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('ipsNicNamePrefix'), 'serverside'))]"
+      ]
+    }, {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('ipsNicNamePrefix'), 'management')]",
+      "apiVersion": "[variables('networkInterfacesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "ipConfigurations": [{
+            "name": "ips-mgmt",
+            "properties": {
+              "subnet": {
+                "id": "[variables('managementSubnetReference')]"
+              },
+              "privateIPAllocationMethod": "Dynamic"
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('ipsNsgNamePrefix'), 'management'))]"
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('ipsNsgNamePrefix'), 'management')]"
+      ]
+    }, {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('ipsNicNamePrefix'), 'clientside')]",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[variables('networkInterfacesApiVersion')]",
+      "properties": {
+        "enableIPForwarding": true,
+        "ipConfigurations": [{
+            "name": "ips-ipconfig1",
+            "properties": {
+              "privateIPAddress": "[parameters('ipsClientsideIp')]",
+              "privateIPAllocationMethod": "Static",
+              "subnet": {
+                "id": "[variables('ipsSubnetReference-clientside')]"
+              }
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]"
+      ]
+    }, {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('ipsNicNamePrefix'), 'serverside')]",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "[variables('networkInterfacesApiVersion')]",
+      "properties": {
+        "enableIPForwarding": true,
+        "ipConfigurations": [{
+            "name": "ips-ipconfig2",
+            "properties": {
+              "privateIPAddress": "[parameters('ipsServersideIp')]",
+              "privateIPAllocationMethod": "Static",
+              "subnet": {
+                "id": "[variables('ipsSubnetReference-serverside')]"
+              }
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]"
+      ]
+    }, {
+      "name": "[concat(variables('ipsNsgNamePrefix'), 'management')]",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "[variables('networkSecurityGroupsApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [{
+            "name": "default-allow-ssh",
+            "properties": {
+              "priority": 4002,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "22",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    }, {
+      "type": "Microsoft.Network/loadBalancers",
+      "name": "[variables('internalAlbName')]",
+      "apiVersion": "[variables('loadBalancersApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "frontendIPConfigurations": [{
+            "name": "[variables('internalAlbIpConfigRuleName')]",
+            "properties": {
+              "privateIPAddress": "[parameters('internalAlbIp')]",
+              "privateIPAllocationMethod": "Static",
+              "subnet": {
+                "id": "[variables('internalSubnetReference-clientside')]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [{
+            "name": "[variables('internalAlbBackendRuleName')]"
+          }
+        ],
+        "probes": [{
+            "name": "[variables('internalAlbHealthProbeRuleName')]",
+            "properties": {
+              "protocol": "tcp",
+              "port": 9000,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ],
+        "loadBalancingRules": [{
+            "name": "lbRule1",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('internalAlbIpConfigRuleId')]"
+              },
+              "frontendPort": 80,
+              "backendPort": 80,
+              "enableFloatingIP": true,
+              "idleTimeoutInMinutes": 4,
+              "protocol": "Tcp",
+              "loadDistribution": "Default",
+              "backendAddressPool": {
+                "id": "[variables('internalAlbBackendRuleId')]"
+              },
+              "probe": {
+                "id": "[variables('internalAlbHealthProbeRuleId')]"
+              }
+            }
+          }, {
+            "name": "sshLinuxJumpBoxRule",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('internalAlbIpConfigRuleId')]"
+              },
+              "frontendPort": 22,
+              "backendPort": 22,
+              "enableFloatingIP": true,
+              "idleTimeoutInMinutes": 4,
+              "protocol": "Tcp",
+              "loadDistribution": "Default",
+              "backendAddressPool": {
+                "id": "[variables('internalAlbBackendRuleId')]"
+              },
+              "probe": {
+                "id": "[variables('internalAlbHealthProbeRuleId')]"
+              }
+            }
+          }, {
+            "name": "rdpWindowsJumpBoxRule",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('internalAlbIpConfigRuleId')]"
+              },
+              "frontendPort": 3389,
+              "backendPort": 3389,
+              "enableFloatingIP": true,
+              "idleTimeoutInMinutes": 4,
+              "protocol": "Tcp",
+              "loadDistribution": "Default",
+              "backendAddressPool": {
+                "id": "[variables('internalAlbBackendRuleId')]"
+              },
+              "probe": {
+                "id": "[variables('internalAlbHealthProbeRuleId')]"
+              }
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]"
+      ]
+    }, {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('internalAvailabilitySetName')]",
+      "apiVersion": "[variables('availabilitySetsApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "platformFaultDomainCount": "2",
+        "platformUpdateDomainCount": "2"
+      },
+      "sku": {
+        "name": "Aligned"
+      }
+    }, {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(variables('internalVpxNamePrefix'), copyIndex())]",
+      "apiVersion": "[variables('virtualMachinesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "vmcopy",
+        "count": 2
+      },
+      "plan": {
+        "name": "[parameters('citrixADCVmSku')]",
+        "publisher": "citrix",
+        "product": "netscalervpx-121"
+      },
+      "properties": {
+        "osProfile": {
+          "computerName": "[concat(variables('internalVpxNamePrefix'), copyIndex())]",
+          "adminUsername": "[parameters('citrixADCUsername')]",
+          "adminPassword": "[parameters('citrixADCPassword')]",
+          "customData": "[base64(concat('{\"username\":\"', parameters('citrixADCUsername'), '\",\"ha_config\":{\"peer_node\":\"', reference(concat(variables('internalNicNamePrefix'), sub(1, copyIndex()), '-management')).ipConfigurations[0].properties.privateIPAddress ,'\"},\"vpx_config\":{\"snip_11\":\"', reference(concat(variables('internalNicNamePrefix'), copyIndex(), '-clientside')).ipConfigurations[0].properties.privateIPAddress ,'\",\"pvt_ip_12\":\"', reference(concat(variables('internalNicNamePrefix'), copyIndex(), '-serverside')).ipConfigurations[0].properties.privateIPAddress ,'\",\"subnet_11\":\"', reference(variables('internalSubnetReference-clientside'), variables('virtualNetworksApiVersion'), 'Full').properties.addressPrefix ,'\",\"subnet_12\":\"', reference(variables('internalSubnetReference-serverside'), variables('virtualNetworksApiVersion'), 'Full').properties.addressPrefix, '\"}}'))]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('citrixADCVmSize')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "citrix",
+            "offer": "netscalervpx-121",
+            "sku": "[parameters('citrixADCVmSku')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "managedDisk": {
+              "storageAccountType": "[parameters('managedDiskStorageAccountType')]"
+            }
+          },
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [{
+              "id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('internalNicNamePrefix'), copyIndex(), '-management'))]",
+              "properties": {
+                "primary": true
+              }
+            }, {
+              "id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('internalNicNamePrefix'), copyIndex(), '-clientside'))]",
+              "properties": {
+                "primary": false
+              }
+            }, {
+              "id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('internalNicNamePrefix'), copyIndex(), '-serverside'))]",
+              "properties": {
+                "primary": false
+              }
+            }
+          ]
+        },
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('internalAvailabilitySetName'))]"
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[reference(resourceId( 'Microsoft.Storage/storageAccounts', variables('storageAccountName')), variables('storageAccountsApiVersion')).primaryEndpoints['blob']]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('internalNicNamePrefix'), copyIndex(), '-management')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('internalNicNamePrefix'), sub(1,copyIndex()), '-management')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('internalNicNamePrefix'), copyIndex(), '-clientside')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('internalNicNamePrefix'), sub(1,copyIndex()), '-clientside')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('internalNicNamePrefix'), copyIndex(), '-serverside')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('internalNicNamePrefix'), sub(1,copyIndex()), '-serverside')]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('internalAvailabilitySetName'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
+      ]
+    }, {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('internalNicNamePrefix'), copyIndex(), '-management')]",
+      "apiVersion": "[variables('networkInterfacesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "niccopy-management",
+        "count": 2
+      },
+      "properties": {
+        "ipConfigurations": [{
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[variables('managementSubnetReference')]"
+              },
+              "privateIPAllocationMethod": "Dynamic"
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('internalNsgNamePrefix'), copyIndex(), '-management'))]"
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('internalNsgNamePrefix'), copyIndex(), '-management')]"
+      ]
+    }, {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('internalNicNamePrefix'), copyIndex(), '-clientside')]",
+      "apiVersion": "[variables('networkInterfacesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "niccopy-clientside",
+        "count": 2
+      },
+      "properties": {
+        "ipConfigurations": [{
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[variables('internalSubnetReference-clientside')]"
+              },
+              "privateIPAllocationMethod": "Dynamic",
+              "loadBalancerBackendAddressPools": [{
+                  "id": "[variables('internalAlbBackendRuleId')]"
+                }
+              ]
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('internalNsgNamePrefix'), copyIndex(), '-clientside'))]"
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('internalNsgNamePrefix'), copyIndex(), '-clientside')]",
+        "[concat('Microsoft.Network/loadBalancers/', variables('internalAlbName'))]"
+      ]
+    }, {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('internalNicNamePrefix'), copyIndex(), '-serverside')]",
+      "apiVersion": "[variables('networkInterfacesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "niccopy-serverside",
+        "count": 2
+      },
+      "properties": {
+        "ipConfigurations": [{
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[variables('internalSubnetReference-serverside')]"
+              },
+              "privateIPAllocationMethod": "Dynamic"
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('internalNsgNamePrefix'), copyIndex(), '-serverside'))]"
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('internalNsgNamePrefix'), copyIndex(), '-serverside')]"
+      ]
+    }, {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[concat(variables('internalNsgNamePrefix'), copyIndex(), '-management')]",
+      "apiVersion": "[variables('networkSecurityGroupsApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "nsgcopy-management",
+        "count": 2
+      },
+      "properties": {
+        "securityRules": [{
+            "name": "default-allow-ssh",
+            "properties": {
+              "priority": 4002,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "22",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }, {
+            "name": "autoscale-daemon",
+            "properties": {
+              "priority": 101,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "9001",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    }, {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[concat(variables('internalNsgNamePrefix'), copyIndex(), '-clientside')]",
+      "apiVersion": "[variables('networkSecurityGroupsApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "nsgcopy-clientside",
+        "count": 2
+      },
+      "properties": {
+        "securityRules": [{
+            "name": "default-allow-http",
+            "properties": {
+              "priority": 4001,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "80",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }, {
+            "name": "default-allow-ssh",
+            "properties": {
+              "priority": 4002,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "22",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }, {
+            "name": "default-allow-rdp",
+            "properties": {
+              "priority": 4003,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "3389",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    }, {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[concat(variables('internalNsgNamePrefix'), copyIndex(), '-serverside')]",
+      "apiVersion": "[variables('networkSecurityGroupsApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "nsgcopy-serverside",
+        "count": 2
+      },
+      "properties": {
+        "securityRules": [{
+            "name": "default-allow-tcp",
+            "properties": {
+              "priority": 4096,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "*",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    }, {
+      "type": "Microsoft.Network/loadBalancers",
+      "name": "[concat(variables('externalAlbName'), '-clientside')]",
+      "apiVersion": "[variables('loadBalancersApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "frontendIPConfigurations": [{
+            "name": "[concat(variables('externalAlbIpConfigRuleName'), '-clientside')]",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId( 'Microsoft.Network/publicIpAddresses', variables('externalAlbpublicIp1Name'))]"
+              }
+            }
+          }, {
+            "name": "[concat(variables('externalAlbIpConfigRuleName'), '-jumpBoxes')]",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId( 'Microsoft.Network/publicIpAddresses', variables('externalAlbpublicIp2Name'))]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [{
+            "name": "[concat(variables('externalAlbBackendRuleName'), '-clientside')]"
+          }
+        ],
+        "probes": [{
+            "name": "[concat(variables('externalAlbHealthProbeRuleName'), '-clientside')]",
+            "properties": {
+              "protocol": "tcp",
+              "port": 9000,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ],
+        "loadBalancingRules": [{
+            "name": "httpServerRequestRule",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('externalAlbIpConfigRuleId-clientside')]"
+              },
+              "frontendPort": 80,
+              "backendPort": 80,
+              "enableFloatingIP": true,
+              "idleTimeoutInMinutes": 4,
+              "protocol": "Tcp",
+              "loadDistribution": "Default",
+              "backendAddressPool": {
+                "id": "[variables('externalAlbBackendRuleId-clientside')]"
+              },
+              "probe": {
+                "id": "[variables('externalAlbHealthProbeRuleId-clientside')]"
+              }
+            }
+          }, {
+            "name": "sshLinuxJumpBoxRule",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('externalAlbIpConfigRuleId-jumpBoxes')]"
+              },
+              "frontendPort": 22,
+              "backendPort": 22,
+              "enableFloatingIP": true,
+              "idleTimeoutInMinutes": 4,
+              "protocol": "Tcp",
+              "loadDistribution": "Default",
+              "backendAddressPool": {
+                "id": "[variables('externalAlbBackendRuleId-clientside')]"
+              },
+              "probe": {
+                "id": "[variables('externalAlbHealthProbeRuleId-clientside')]"
+              }
+            }
+          }, {
+            "name": "rdpWindowsJumpBoxRule",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('externalAlbIpConfigRuleId-jumpBoxes')]"
+              },
+              "frontendPort": 3389,
+              "backendPort": 3389,
+              "enableFloatingIP": true,
+              "idleTimeoutInMinutes": 4,
+              "protocol": "Tcp",
+              "loadDistribution": "Default",
+              "backendAddressPool": {
+                "id": "[variables('externalAlbBackendRuleId-clientside')]"
+              },
+              "probe": {
+                "id": "[variables('externalAlbHealthProbeRuleId-clientside')]"
+              }
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIpAddresses/', variables('externalAlbpublicIp1Name'))]",
+        "[concat('Microsoft.Network/publicIpAddresses/', variables('externalAlbpublicIp2Name'))]"
+      ]
+    }, {
+      "type": "Microsoft.Network/loadBalancers",
+      "name": "[concat(variables('externalAlbName'), '-serverside')]",
+      "apiVersion": "[variables('loadBalancersApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "frontendIPConfigurations": [{
+            "name": "[concat(variables('externalAlbIpConfigRuleName'), '-serverside')]",
+            "properties": {
+              "privateIPAddress": "[parameters('externalAdcIp-serverside')]",
+              "privateIPAllocationMethod": "Static",
+              "subnet": {
+                "id": "[variables('externalSubnetReference-serverside')]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [{
+            "name": "[concat(variables('externalAlbBackendRuleName'), '-serverside')]"
+          }
+        ],
+        "probes": [{
+            "name": "[concat(variables('externalAlbHealthProbeRuleName'), '-serverside')]",
+            "properties": {
+              "protocol": "tcp",
+              "port": 9000,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ],
+        "loadBalancingRules": [{
+            "name": "lbRule1",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('externalAlbIpConfigRuleId-serverside')]"
+              },
+              "frontendPort": 80,
+              "backendPort": 80,
+              "enableFloatingIP": true,
+              "idleTimeoutInMinutes": 4,
+              "protocol": "Tcp",
+              "loadDistribution": "Default",
+              "backendAddressPool": {
+                "id": "[variables('externalAlbBackendRuleId-serverside')]"
+              },
+              "probe": {
+                "id": "[variables('externalAlbHealthProbeRuleId-serverside')]"
+              }
+            }
+          }, {
+            "name": "sshLinuxJumpBoxRule",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('externalAlbIpConfigRuleId-serverside')]"
+              },
+              "frontendPort": 22,
+              "backendPort": 22,
+              "enableFloatingIP": true,
+              "idleTimeoutInMinutes": 4,
+              "protocol": "Tcp",
+              "loadDistribution": "Default",
+              "backendAddressPool": {
+                "id": "[variables('externalAlbBackendRuleId-serverside')]"
+              },
+              "probe": {
+                "id": "[variables('externalAlbHealthProbeRuleId-serverside')]"
+              }
+            }
+          }, {
+            "name": "rdpWindowsJumpBoxRule",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('externalAlbIpConfigRuleId-serverside')]"
+              },
+              "frontendPort": 3389,
+              "backendPort": 3389,
+              "enableFloatingIP": true,
+              "idleTimeoutInMinutes": 4,
+              "protocol": "Tcp",
+              "loadDistribution": "Default",
+              "backendAddressPool": {
+                "id": "[variables('externalAlbBackendRuleId-serverside')]"
+              },
+              "probe": {
+                "id": "[variables('externalAlbHealthProbeRuleId-serverside')]"
+              }
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]"
+      ]
+    }, {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('externalAvailabilitySetName')]",
+      "apiVersion": "[variables('availabilitySetsApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "platformFaultDomainCount": "2",
+        "platformUpdateDomainCount": "2"
+      },
+      "sku": {
+        "name": "Aligned"
+      }
+    }, {
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(variables('externalVpxNamePrefix'), copyIndex())]",
+      "apiVersion": "[variables('virtualMachinesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "vmcopy",
+        "count": 2
+      },
+      "plan": {
+        "name": "[parameters('citrixADCVmSku')]",
+        "publisher": "citrix",
+        "product": "netscalervpx-121"
+      },
+      "properties": {
+        "osProfile": {
+          "computerName": "[concat(variables('externalVpxNamePrefix'), copyIndex())]",
+          "adminUsername": "[parameters('citrixADCUsername')]",
+          "adminPassword": "[parameters('citrixADCPassword')]",
+          "customData": "[base64(concat('{\"username\":\"', parameters('citrixADCUsername'), '\",\"ha_config\":{\"peer_node\":\"', reference(concat(variables('externalNicNamePrefix'), sub(1, copyIndex()), '-management')).ipConfigurations[0].properties.privateIPAddress ,'\"},\"vpx_config\":{\"snip_11\":\"', reference(concat(variables('externalNicNamePrefix'), copyIndex(), '-clientside')).ipConfigurations[0].properties.privateIPAddress ,'\",\"pvt_ip_12\":\"', reference(concat(variables('externalNicNamePrefix'), copyIndex(), '-serverside')).ipConfigurations[0].properties.privateIPAddress ,'\",\"subnet_11\":\"', reference(variables('externalSubnetReference-clientside'), variables('virtualNetworksApiVersion'), 'Full').properties.addressPrefix ,'\",\"subnet_12\":\"', reference(variables('externalSubnetReference-serverside'), variables('virtualNetworksApiVersion'), 'Full').properties.addressPrefix, '\"}}'))]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('citrixADCVmSize')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "citrix",
+            "offer": "netscalervpx-121",
+            "sku": "[parameters('citrixADCVmSku')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "fromImage",
+            "managedDisk": {
+              "storageAccountType": "[parameters('managedDiskStorageAccountType')]"
+            }
+          },
+          "dataDisks": []
+        },
+        "networkProfile": {
+          "networkInterfaces": [{
+              "id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('externalNicNamePrefix'), copyIndex(), '-management'))]",
+              "properties": {
+                "primary": true
+              }
+            }, {
+              "id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('externalNicNamePrefix'), copyIndex(), '-clientside'))]",
+              "properties": {
+                "primary": false
+              }
+            }, {
+              "id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('externalNicNamePrefix'), copyIndex(), '-serverside'))]",
+              "properties": {
+                "primary": false
+              }
+            }
+          ]
+        },
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('externalAvailabilitySetName'))]"
+        },
+        "diagnosticsProfile": {
+          "bootDiagnostics": {
+            "enabled": true,
+            "storageUri": "[reference(resourceId( 'Microsoft.Storage/storageAccounts', variables('storageAccountName')), variables('storageAccountsApiVersion')).primaryEndpoints['blob']]"
+          }
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('externalNicNamePrefix'), copyIndex(), '-management')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('externalNicNamePrefix'), sub(1,copyIndex()), '-management')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('externalNicNamePrefix'), copyIndex(), '-clientside')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('externalNicNamePrefix'), sub(1,copyIndex()), '-clientside')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('externalNicNamePrefix'), copyIndex(), '-serverside')]",
+        "[concat('Microsoft.Network/networkInterfaces/', variables('externalNicNamePrefix'), sub(1,copyIndex()), '-serverside')]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('externalAvailabilitySetName'))]",
+        "[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
+      ]
+    }, {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('externalNicNamePrefix'), copyIndex(), '-management')]",
+      "apiVersion": "[variables('networkInterfacesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "niccopy-management",
+        "count": 2
+      },
+      "properties": {
+        "ipConfigurations": [{
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[variables('managementSubnetReference')]"
+              },
+              "privateIPAllocationMethod": "Dynamic"
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('externalNsgNamePrefix'), copyIndex(), '-management'))]"
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('externalNsgNamePrefix'), copyIndex(), '-management')]"
+      ]
+    }, {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('externalNicNamePrefix'), copyIndex(), '-clientside')]",
+      "apiVersion": "[variables('networkInterfacesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "niccopy-clientside",
+        "count": 2
+      },
+      "properties": {
+        "ipConfigurations": [{
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[variables('externalSubnetReference-clientside')]"
+              },
+              "privateIPAllocationMethod": "Dynamic",
+              "loadBalancerBackendAddressPools": [{
+                  "id": "[variables('externalAlbBackendRuleId-clientside')]"
+                }
+              ]
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('externalNsgNamePrefix'), copyIndex(), '-clientside'))]"
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('externalNsgNamePrefix'), copyIndex(), '-clientside')]",
+        "[concat('Microsoft.Network/loadBalancers/', variables('externalAlbName'), '-clientside')]"
+      ]
+    }, {
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('externalNicNamePrefix'), copyIndex(), '-serverside')]",
+      "apiVersion": "[variables('networkInterfacesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "niccopy-serverside",
+        "count": 2
+      },
+      "properties": {
+        "ipConfigurations": [{
+            "name": "ipconfig1",
+            "properties": {
+              "subnet": {
+                "id": "[variables('externalSubnetReference-serverside')]"
+              },
+              "privateIPAllocationMethod": "Dynamic",
+              "loadBalancerBackendAddressPools": [{
+                  "id": "[variables('externalAlbBackendRuleId-serverside')]"
+                }
+              ]
+            }
+          }
+        ],
+        "networkSecurityGroup": {
+          "id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('externalNsgNamePrefix'), copyIndex(), '-serverside'))]"
+        }
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('externalNsgNamePrefix'), copyIndex(), '-serverside')]",
+        "[concat('Microsoft.Network/loadBalancers/', variables('externalAlbName'), '-serverside')]"
+      ]
+    }, {
+      "type": "Microsoft.Network/publicIpAddresses",
+      "name": "[variables('externalAlbpublicIp1Name')]",
+      "apiVersion": "[variables('publicIpAddressesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIpAllocationMethod": "Static"
+      }
+    }, {
+      "type": "Microsoft.Network/publicIpAddresses",
+      "name": "[variables('externalAlbpublicIp2Name')]",
+      "apiVersion": "[variables('publicIpAddressesApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIpAllocationMethod": "Static"
+      }
+    }, {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[concat(variables('externalNsgNamePrefix'), copyIndex(), '-management')]",
+      "apiVersion": "[variables('networkSecurityGroupsApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "nsgcopy-management",
+        "count": 2
+      },
+      "properties": {
+        "securityRules": [{
+            "name": "default-allow-ssh",
+            "properties": {
+              "priority": 4002,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "22",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }, {
+            "name": "autoscale-daemon",
+            "properties": {
+              "priority": 101,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "9001",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    }, {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[concat(variables('externalNsgNamePrefix'), copyIndex(), '-clientside')]",
+      "apiVersion": "[variables('networkSecurityGroupsApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "nsgcopy-clientside",
+        "count": 2
+      },
+      "properties": {
+        "securityRules": [{
+            "name": "default-allow-http",
+            "properties": {
+              "priority": 4001,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "80",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }, {
+            "name": "default-allow-ssh",
+            "properties": {
+              "priority": 4002,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "22",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }, {
+            "name": "default-allow-rdp",
+            "properties": {
+              "priority": 4003,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "3389",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    }, {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[concat(variables('externalNsgNamePrefix'), copyIndex(), '-serverside')]",
+      "apiVersion": "[variables('networkSecurityGroupsApiVersion')]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "nsgcopy-serverside",
+        "count": 2
+      },
+      "properties": {
+        "securityRules": [{
+            "name": "default-allow-tcp",
+            "properties": {
+              "priority": 4096,
+              "sourceAddressPrefix": "*",
+              "protocol": "TCP",
+              "destinationPortRange": "*",
+              "access": "Allow",
+              "direction": "Inbound",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "Temporary_Alb_Public_Ip_(T1)": {
+      "type": "string",
+      "value": "[reference(variables('tempAlbPublicIpName')).ipAddress]"
+    },
+    "External_Alb_Public_Ip_Http_(EL1)": {
+      "type": "string",
+      "value": "[reference(variables('externalAlbpublicIp1Name')).ipAddress]"
+    },
+    "External_Alb_Public_Ip_JumpBoxes_(EL2)": {
+      "type": "string",
+      "value": "[reference(variables('externalAlbpublicIp2Name')).ipAddress]"
+    },
+    "Internal_Alb_Ip_(IL1)": {
+      "type": "string",
+      "value": "[parameters('internalAlbIp')]"
+    },
+    "External_Adc_Vpx0_Mgmt_Ip_(EA1)": {
+      "type": "string",
+      "value": "[reference(concat(variables('externalNicNamePrefix'), 0, '-management')).ipConfigurations[0].properties.privateIPAddress]"
+    },
+    "Internal_Adc_Vpx0_Mgmt_Ip_(IA1)": {
+      "type": "string",
+      "value": "[reference(concat(variables('internalNicNamePrefix'), 0, '-management')).ipConfigurations[0].properties.privateIPAddress]"
+    },
+    "IPS_Mgmt_Ip_(IPS1)": {
+      "type": "string",
+      "value": "[reference(concat(variables('ipsNicNamePrefix'), 'management')).ipConfigurations[0].properties.privateIPAddress]"
+    },
+    "Linux_Jump_Box_Ip_(L1)": {
+      "type": "string",
+      "value": "[reference(variables('linuxJumpBoxNicName')).ipConfigurations[0].properties.privateIPAddress]"
+    },
+    "Windwos_Jump_Box_Ip_(W1)": {
+      "type": "string",
+      "value": "[reference(variables('windowsJumpBoxNicName')).ipConfigurations[0].properties.privateIPAddress]"
+    },
+    "Batch_Cmd_External_Adc_Primary": {
+      "type": "string",
+      "value": "[concat('add route 0.0.0.0 0.0.0.0 ', parameters('externalAdcGatewayIp-clientside'), ' ; rm route 0.0.0.0 0.0.0.0 ', parameters('managementSubnetGatewayIp'), ' ; add route ', first(split(parameters('internalSubnetAddressPrefix-clientside'), '/')), ' ', variables('internalSubnetMask-clientside'), ' ', parameters('externalAdcGatewayIp-serverside'), ' ; add lbvserver ip1http HTTP ', reference(variables('externalAlbpublicIp1Name')).ipAddress, ' 80 ; add lbvserver ip2ssh TCP ', reference(variables('externalAlbpublicIp2Name')).ipAddress, ' 22 ; add lbvserver ip3rdp TCP ', reference(variables('externalAlbpublicIp2Name')).ipAddress, ' 3389 ; add service iadchttp ', parameters('internalAlbIp'), ' HTTP 80 ; add service iadcssh ', parameters('internalAlbIp'), ' TCP 22 ; add service iadcrdp ', parameters('internalAlbIp'), ' TCP 3389 ; bind lbvserver ip1http iadchttp ; bind lbvserver ip2ssh iadcssh ; bind lbvserver ip3rdp iadcrdp ; save config')]"
+    },
+    "Batch_Cmd_Internal_Adc_Primary": {
+      "type": "string",
+      "value": "[concat('add route 0.0.0.0 0.0.0.0 ', parameters('internalAdcGatewayIp-clientside'), ' ; rm route 0.0.0.0 0.0.0.0 ', parameters('managementSubnetGatewayIp'), ' ; add lbvserver ip1http HTTP ', parameters('internalAlbIp'), ' 80 ; add lbvserver ip2ssh TCP ', parameters('internalAlbIp'), ' 22 ; add lbvserver ip3rdp TCP ', parameters('internalAlbIp'), ' 3389 ; add service iadcssh ', reference(variables('linuxJumpBoxNicName')).ipConfigurations[0].properties.privateIPAddress, ' TCP 22 ; add service iadcrdp ', reference(variables('windowsJumpBoxNicName')).ipConfigurations[0].properties.privateIPAddress, ' TCP 3389 ; bind lbvserver ip2ssh iadcssh ; bind lbvserver ip3rdp iadcrdp ; save config')]"
+    }
+  }
+}
