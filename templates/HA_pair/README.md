@@ -20,8 +20,11 @@ For understanding architecture or manual deployment steps, refer
 ### Quick Launch Link
 ---
 #### NetScaler High Availability(HA) Pair - 3 NICs 
-##### &nbsp;&nbsp;&nbsp;&nbsp; using Availability Set:
+##### &nbsp;&nbsp;&nbsp;&nbsp; using Availability Set with public IP:
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; [![Create NetScaler High Availability(HA) Pair - 3 NICs (using Availability Set)](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_3nic%2FmainTemplate.json) 
+
+##### &nbsp;&nbsp;&nbsp;&nbsp; using Availability Set with private IP (for clients in same virtual network):
+&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; [![Create NetScaler High Availability(HA) Pair - 3 NICs (Private IP on ALB, using Availability Set)](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_3nic_internal%2FmainTemplate.json) 
 
 ##### &nbsp;&nbsp;&nbsp;&nbsp; using Availability Zones:
 &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; [![Create NetScaler High Availability(HA) Pair - 3 NICs (using Availability Zones)](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2FHA_pair%2FHA_3nic_zones%2FmainTemplate.json)
