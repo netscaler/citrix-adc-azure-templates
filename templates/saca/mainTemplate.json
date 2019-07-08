@@ -1,6 +1,6 @@
 {
   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion": "12.1.0.0",
+  "contentVersion": "13.0.0.0",
   "parameters": {
     "citrixADCUsername": {
       "defaultValue": "defaultUser",
@@ -1266,7 +1266,7 @@
       "plan": {
         "name": "[parameters('citrixADCVmSku')]",
         "publisher": "citrix",
-        "product": "netscalervpx-121"
+        "product": "netscalervpx-130"
       },
       "properties": {
         "osProfile": {
@@ -1281,7 +1281,7 @@
         "storageProfile": {
           "imageReference": {
             "publisher": "citrix",
-            "offer": "netscalervpx-121",
+            "offer": "netscalervpx-130",
             "sku": "[parameters('citrixADCVmSku')]",
             "version": "latest"
           },
@@ -1750,7 +1750,7 @@
       "plan": {
         "name": "[parameters('citrixADCVmSku')]",
         "publisher": "citrix",
-        "product": "netscalervpx-121"
+        "product": "netscalervpx-130"
       },
       "properties": {
         "osProfile": {
@@ -1765,7 +1765,7 @@
         "storageProfile": {
           "imageReference": {
             "publisher": "citrix",
-            "offer": "netscalervpx-121",
+            "offer": "netscalervpx-130",
             "sku": "[parameters('citrixADCVmSku')]",
             "version": "latest"
           },
