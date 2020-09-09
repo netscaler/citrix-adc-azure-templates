@@ -195,7 +195,7 @@
 					"computerName": "[concat(variables('vmN'), copyIndex())]",
 					"adminUsername": "[parameters('adminUsername')]",
 					"adminPassword": "[parameters('adminPassword')]",
-					"customData": "[base64(concat('{\"username\":\"', parameters('adminUsername'), '\",\"ha_config\":{\"peer_node\":\"', reference(concat(variables('nicN'), sub(1, copyIndex()))).ipConfigurations[0].properties.privateIPAddress ,'\"},\"vpx_config\":{\"snip_11\":\"', reference(concat(variables('nicN'), copyIndex())).ipConfigurations[1].properties.privateIPAddress ,'\",\"pvt_ip_12\":\"', reference(concat(variables('nicN'), copyIndex())).ipConfigurations[2].properties.privateIPAddress ,'\",\"subnet_11\":\"', reference(variables('snetRef'), '2017-10-01', 'Full').properties.addressPrefix ,'\",\"subnet_12\":\"', reference(variables('snetRef'), '2017-10-01', 'Full').properties.addressPrefix, '\"}}'))]"
+					"customData": "[base64(concat('{\"username\":\"', parameters('adminUsername'), '\",\"ha_config\":{\"peer_node\":\"', reference(concat(variables('nicN'), sub(1, copyIndex()))).ipConfigurations[0].properties.privateIPAddress ,'\"},\"vpx_config\":{\"snip_11\":\"', reference(concat(variables('nicN'), copyIndex())).ipConfigurations[2].properties.privateIPAddress ,'\",\"pvt_ip_11\":\"', reference(concat(variables('nicN'), copyIndex())).ipConfigurations[1].properties.privateIPAddress ,'\",\"subnet_11\":\"', reference(variables('snetRef'), '2017-10-01', 'Full').properties.addressPrefix ,'\"}}'))]"
 				},
 				"hardwareProfile": {
 					"vmSize": "[parameters('vmSize')]"
