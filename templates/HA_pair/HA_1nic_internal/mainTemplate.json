@@ -3,7 +3,7 @@
 	"contentVersion": "13.0.0.0",
 	"parameters": {
 		"adminUsername": {
-			"defaultValue": "nsroot",
+			"defaultValue": "defaultUser",
 			"type": "String",
 			"metadata": {
 				"description": "Username for the Virtual Machines."
@@ -94,7 +94,6 @@
 		"probeN": "probe-11",
 		"ipConfN": "ipconf-11",
 		"avsN": "avl-set",
-		"mgmt-pipN-suffix": "-mgmt-publicip",
 		"saN": "[concat('vpxha', uniqueString(resourceGroup().id))]",
 		"vnetRg": "[if(equals(parameters('vnetResourceGroup'), ''), resourceGroup().name,parameters('vnetResourceGroup'))]",
 		"vnetId": "[resourceId(variables('vnetRg'), 'Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
@@ -280,10 +279,7 @@
 							"subnet": {
 								"id": "[variables('snetRef')]"
 							},
-							"privateIPAllocationMethod": "Dynamic",
-							"publicIpAddress": {
-								"id": "[resourceId('Microsoft.Network/publicIpAddresses', concat(variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix')))]"
-							}
+							"privateIPAllocationMethod": "Dynamic"
 						}
 					}, {
 						"name": "vip",
@@ -313,22 +309,9 @@
 			},
 			"dependsOn": [
 				"[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
-				"[concat('Microsoft.Network/publicIpAddresses/', variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix'))]",
 				"[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'), copyIndex())]",
 				"[concat('Microsoft.Network/loadBalancers/', variables('lbN'))]"
 			]
-		}, {
-			"type": "Microsoft.Network/publicIpAddresses",
-			"name": "[concat(variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix'))]",
-			"apiVersion": "2017-10-01",
-			"location": "[resourceGroup().location]",
-			"copy": {
-				"name": "ipcopy",
-				"count": 2
-			},
-			"properties": {
-				"publicIpAllocationMethod": "Dynamic"
-			}
 		}, {
 			"type": "Microsoft.Network/networkSecurityGroups",
 			"name": "[concat(variables('nsgN'), copyIndex())]",
