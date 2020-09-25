@@ -1,0 +1,336 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "13.0.1.0",
+	"parameters": {
+		"adminUsername": {
+			"type": "String",
+			"metadata": {
+				"description": "Username for the Citrix ADC VPX."
+			}
+		},
+		"adminPassword": {
+			"type": "SecureString",
+			"metadata": {
+				"description": "Password for the Citrix ADC VPX."
+			}
+		},
+		"vmSize": {
+			"defaultValue": "Standard_DS3_v2",
+			"type": "String",
+			"metadata": {
+				"description": "Size of Azure Citrix ADC VPX."
+			}
+		},
+		"vmSku": {
+			"defaultValue": "netscalerbyol",
+			"type": "String",
+			"allowedValues": [
+				"netscalerbyol",
+				"netscalervpxexpress",
+				"netscaler10standard",
+				"netscaler10enterprise",
+				"netscaler10platinum",
+				"netscaler200standard",
+				"netscaler200enterprise",
+				"netscaler200platinum",
+				"netscaler1000standard",
+				"netscaler1000enterprise",
+				"netscaler1000platinum",
+				"netscaler3000standard",
+				"netscaler3000enterprise",
+				"netscaler3000platinum"
+			],
+
+			"metadata": {
+				"description": "SKU of Citrix ADC Image."
+			}
+		},
+		"vnetName": {
+			"defaultValue": "vnet01",
+			"type": "String",
+			"metadata": {
+				"description": "Name of Virtual Network"
+			}
+		},
+		"vnetResourceGroup": {
+			"defaultValue": "",
+			"type": "String",
+			"metadata": {
+				"description": "Resource Group name of existing Virtual Network. Leave empty if Resource Group is same as current deployment."
+			}
+		},
+		"vnetNewOrExisting": {
+			"defaultValue": "new",
+			"allowedValues": [
+				"new",
+				"existing"
+			],
+			"type": "String"
+		},
+		"snetName": {
+			"defaultValue": "subnet",
+			"type": "String",
+			"metadata": {
+				"description": "Name of Subnet. Enter existing subnet name if opting for existing Virtual Network"
+			}
+		},
+		"snetAddressPrefix": {
+			"defaultValue": "10.11.0.0/24",
+			"type": "String",
+			"metadata": {
+				"description": "Value of subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
+			}
+		},
+		"resourceLocation": {
+			"type": "string",
+			"defaultValue": "[resourceGroup().location]",
+			"metadata": {
+				"description": "Location for the resources. Leave unchanged to use the location same as of Resource Group"
+			}
+		}
+	},
+	"variables": {
+		"vmN": "citrix-adc-vpx",
+		"nicN": "citrix-adc-vpx-nic",
+		"nsgN": "citrix-adc-vpx-nic-nsg",
+		"lbN": "alb",
+		"bePoolN": "bepool-11",
+		"probeN": "probe-11",
+		"ipConfN": "ipconf-11",
+		"avsN": "avl-set",
+		"saN": "[concat('vpxha', uniqueString(resourceGroup().id))]",
+		"vnetRg": "[if(equals(parameters('vnetResourceGroup'), ''), resourceGroup().name,parameters('vnetResourceGroup'))]",
+		"vnetId": "[resourceId(variables('vnetRg'), 'Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
+		"snetRef": "[concat(variables('vnetId'), '/subnets/', parameters('snetName'))]",
+		"lbId": "[resourceId( 'Microsoft.Network/loadBalancers', variables('lbN'))]",
+		"bePoolId": "[concat(variables('lbId'),'/backendAddressPools/', variables('bePoolN'))]",
+		"probeId": "[concat(variables('lbId'),'/probes/', variables('probeN'))]",
+		"ipConfId": "[concat(variables('lbId'),'/frontendIpConfigurations/', variables('ipConfN'))]"
+	},
+	"resources": [
+		{
+			"type": "Microsoft.Network/loadBalancers",
+			"name": "[variables('lbN')]",
+			"apiVersion": "2020-05-01",
+			"location": "[parameters('resourceLocation')]",
+			"properties": {
+				"frontendIPConfigurations": [
+					{
+						"name": "[variables('ipConfN')]",
+						"properties": {
+							"privateIPAllocationMethod": "Dynamic",
+							"subnet": {
+								"id": "[variables('snetRef')]"
+							}
+						}
+					}
+				],
+				"backendAddressPools": [
+					{
+						"name": "[variables('bePoolN')]"
+					}
+				],
+				"probes": [
+					{
+						"name": "[variables('probeN')]",
+						"properties": {
+							"protocol": "tcp",
+							"port": 9000,
+							"intervalInSeconds": 5,
+							"numberOfProbes": 2
+						}
+					}
+				],
+				"loadBalancingRules": [
+					{
+						"name": "lbRule1",
+						"properties": {
+							"frontendIPConfiguration": {
+								"id": "[variables('ipConfId')]"
+							},
+							"frontendPort": 80,
+							"backendPort": 80,
+							"enableFloatingIP": true,
+							"idleTimeoutInMinutes": 4,
+							"protocol": "Tcp",
+							"loadDistribution": "Default",
+							"backendAddressPool": {
+								"id": "[variables('bePoolId')]"
+							},
+							"probe": {
+								"id": "[variables('probeId')]"
+							}
+						}
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]"
+			]
+		},
+		{
+			"type": "Microsoft.Compute/availabilitySets",
+			"name": "[variables('avsN')]",
+			"apiVersion": "2019-07-01",
+			"sku": {
+				"name": "Aligned"
+			},
+			"location": "[parameters('resourceLocation')]",
+			"properties": {
+				"platformFaultDomainCount": 3,
+				"platformUpdateDomainCount": 20
+			}
+		},
+		{
+			"type": "Microsoft.Compute/virtualMachines",
+			"name": "[concat(variables('vmN'), copyIndex())]",
+			"apiVersion": "2019-07-01",
+			"location": "[parameters('resourceLocation')]",
+			"copy": {
+				"name": "vmcopy",
+				"count": 2
+			},
+			"plan": {
+				"name": "[parameters('vmSku')]",
+				"publisher": "citrix",
+				"product": "netscalervpx-130"
+			},
+			"properties": {
+				"osProfile": {
+					"computerName": "[concat(variables('vmN'), copyIndex())]",
+					"adminUsername": "[parameters('adminUsername')]",
+					"adminPassword": "[parameters('adminPassword')]",
+					"customData": "[base64(concat('{\"username\":\"', parameters('adminUsername'), '\",\"ha_config\":{\"peer_node\":\"', reference(concat(variables('nicN'), sub(1, copyIndex()))).ipConfigurations[0].properties.privateIPAddress ,'\"},\"vpx_config\":{\"snip_11\":\"', reference(concat(variables('nicN'), copyIndex())).ipConfigurations[1].properties.privateIPAddress ,'\",\"pvt_ip_11\":\"', reference(variables('lbN')).frontendIPConfigurations[0].properties.privateIPAddress ,'\",\"subnet_11\":\"', reference(variables('snetRef'), '2017-10-01', 'Full').properties.addressPrefix ,'\"}}'))]"
+				},
+				"hardwareProfile": {
+					"vmSize": "[parameters('vmSize')]"
+				},
+				"storageProfile": {
+					"imageReference": {
+						"publisher": "citrix",
+						"offer": "netscalervpx-130",
+						"sku": "[parameters('vmSku')]",
+						"version": "latest"
+					},
+					"osDisk": {
+						"createOption": "fromImage",
+						"managedDisk": {
+							"storageAccountType": "Premium_LRS"
+						}
+					}
+				},
+				"networkProfile": {
+					"networkInterfaces": [
+						{
+							"id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('nicN'), copyIndex()))]",
+							"properties": {
+								"primary": true
+							}
+						}
+					]
+				},
+				"availabilitySet": {
+					"id": "[resourceId('Microsoft.Compute/availabilitySets', variables('avsN'))]"
+				},
+				"diagnosticsProfile": {
+					"bootDiagnostics": {
+						"enabled": true,
+						"storageUri": "[reference(resourceId( 'Microsoft.Storage/storageAccounts', variables('saN')), '2017-10-01').primaryEndpoints['blob']]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), copyIndex())]",
+				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), sub(1,copyIndex()))]",
+				"[concat('Microsoft.Compute/availabilitySets/', variables('avsN'))]",
+				"[concat('Microsoft.Storage/storageAccounts/', variables('saN'))]"
+			]
+		},
+		{
+			"type": "Microsoft.Storage/storageAccounts",
+			"name": "[variables('saN')]",
+			"apiVersion": "2019-06-01",
+			"kind": "Storage",
+			"location": "[parameters('resourceLocation')]",
+			"sku": {
+				"name": "Standard_LRS"
+			},
+			"properties": {}
+		},
+		{
+			"type": "Microsoft.Network/virtualNetworks",
+			"name": "[parameters('vnetName')]",
+			"apiVersion": "2020-05-01",
+			"location": "[parameters('resourceLocation')]",
+			"properties": {
+				"addressSpace": {
+					"addressPrefixes": [
+						"[parameters('snetAddressPrefix')]"
+					]
+				},
+				"subnets": [
+					{
+						"name": "[parameters('snetName')]",
+						"properties": {
+							"addressPrefix": "[parameters('snetAddressPrefix')]"
+						}
+					}
+				]
+			},
+			"condition": "[equals(parameters('vnetNewOrExisting'),'new')]"
+		},
+		{
+			"type": "Microsoft.Network/networkInterfaces",
+			"name": "[concat(variables('nicN'), copyIndex())]",
+			"apiVersion": "2020-05-01",
+			"location": "[parameters('resourceLocation')]",
+			"copy": {
+				"name": "niccopy",
+				"count": 2
+			},
+			"properties": {
+				"ipConfigurations": [
+					{
+						"name": "nsip",
+						"properties": {
+							"primary": true,
+							"subnet": {
+								"id": "[variables('snetRef')]"
+							},
+							"privateIPAllocationMethod": "Dynamic",
+							"loadBalancerBackendAddressPools": [
+								{
+									"id": "[variables('bePoolId')]"
+								}
+							]
+						}
+					},
+					{
+						"name": "snip",
+						"properties": {
+							"subnet": {
+								"id": "[variables('snetRef')]"
+							},
+							"privateIPAllocationMethod": "Dynamic"
+						}
+					}
+				],
+				"networkSecurityGroup": {
+					"id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', variables('nsgN'))]"
+				}
+			},
+			"dependsOn": [
+				"[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
+				"[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'))]",
+				"[concat('Microsoft.Network/loadBalancers/', variables('lbN'))]"
+			]
+		},
+		{
+			"type": "Microsoft.Network/networkSecurityGroups",
+			"name": "[variables('nsgN')]",
+			"apiVersion": "2020-05-01",
+			"location": "[parameters('resourceLocation')]",
+			"properties": {}
+		}
+	]
+}
