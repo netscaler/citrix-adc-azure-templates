@@ -33,9 +33,7 @@ Citrix Citrix ADC High Availability (HA) Azure Resource Manager (ARM) templates 
       </td>
       <td>
         <a
-          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_set%2Fpublic_vip%2F1nic%2FmainTemplate.json"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_set%2Fpublic_vip%2F1nic%2FmainTemplate.json" target="_blank" rel="noopener noreferrer"
         >
           <img src="http://azuredeploy.net/deploybutton.png" />
         </a>
@@ -48,9 +46,7 @@ Citrix Citrix ADC High Availability (HA) Azure Resource Manager (ARM) templates 
       </td>
       <td>
         <a
-          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_set%2Fpublic_vip%2F2nic%2FmainTemplate.json"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_set%2Fpublic_vip%2F2nic%2FmainTemplate.json" target="_blank" rel="noopener noreferrer"
         >
           <img src="http://azuredeploy.net/deploybutton.png" />
         </a>
@@ -63,9 +59,7 @@ Citrix Citrix ADC High Availability (HA) Azure Resource Manager (ARM) templates 
       </td>
       <td>
         <a
-          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_set%2Fpublic_vip%2F3nic%2FmainTemplate.json"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_set%2Fpublic_vip%2F3nic%2FmainTemplate.json" target="_blank" rel="noopener noreferrer"
         >
           <img src="http://azuredeploy.net/deploybutton.png" />
         </a>
@@ -80,9 +74,7 @@ Citrix Citrix ADC High Availability (HA) Azure Resource Manager (ARM) templates 
       </td>
       <td>
         <a
-          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_set%2Fpublic_vip%2F3nic_backend_autoscale%2FmainTemplate.json"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_set%2Fpublic_vip%2F3nic_backend_autoscale%2FmainTemplate.json" target="_blank" rel="noopener noreferrer"
         >
           <img src="http://azuredeploy.net/deploybutton.png" />
         </a>
@@ -96,9 +88,7 @@ Citrix Citrix ADC High Availability (HA) Azure Resource Manager (ARM) templates 
       </td>
       <td>
         <a
-          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_set%2Fprivate_vip%2F1nic%2FmainTemplate.json"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_set%2Fprivate_vip%2F1nic%2FmainTemplate.json" target="_blank" rel="noopener noreferrer"
         >
           <img src="http://azuredeploy.net/deploybutton.png" />
         </a>
@@ -111,9 +101,7 @@ Citrix Citrix ADC High Availability (HA) Azure Resource Manager (ARM) templates 
       </td>
       <td>
         <a
-          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_set%2Fprivate_vip%2F3nic%2FmainTemplate.json"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_set%2Fprivate_vip%2F3nic%2FmainTemplate.json" target="_blank" rel="noopener noreferrer"
         >
           <img src="http://azuredeploy.net/deploybutton.png" />
         </a>
@@ -130,9 +118,7 @@ Citrix Citrix ADC High Availability (HA) Azure Resource Manager (ARM) templates 
       </td>
       <td>
         <a
-          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_zone%2Fpublic_vip%2F3nic%2FmainTemplate.json"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_zone%2Fpublic_vip%2F3nic%2FmainTemplate.json" target="_blank" rel="noopener noreferrer"
         >
           <img src="http://azuredeploy.net/deploybutton.png" />
         </a>
@@ -147,9 +133,7 @@ Citrix Citrix ADC High Availability (HA) Azure Resource Manager (ARM) templates 
       </td>
       <td>
         <a
-          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_zone%2Fpublic_vip%2F3nic_backend_autoscale%2FmainTemplate.json"
-          target="_blank"
-          rel="noopener noreferrer"
+          href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fhigh_availability%2Favailability_zone%2Fpublic_vip%2F3nic_backend_autoscale%2FmainTemplate.json" target="_blank" rel="noopener noreferrer"
         >
           <img src="http://azuredeploy.net/deploybutton.png" />
         </a>
