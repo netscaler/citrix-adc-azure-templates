@@ -1,7 +1,7 @@
-# Citrix ADC (formerly known as NetScaler) Azure Templates 
+# Citrix ADC (formerly known as Citrix ADC) Azure Templates
 
 ## Introduction
-Welcome to the GitHub repository for Citrix ADC (formerly known as NetScaler) ARM(Azure Resource Manager) templates. This repository hosts [Citrix ADC](https://www.citrix.com/en-in/products/citrix-adc/) custom templates for deploying Citrix ADC in Microsoft Azure Cloud Services. All of the templates in this repository have been developed and maintained by the Citrix ADC engineering team. 
+Welcome to the GitHub repository for Citrix ADC (formerly known as Citrix ADC) ARM(Azure Resource Manager) templates. This repository hosts [Citrix ADC](https://www.citrix.com/en-in/products/citrix-adc/) custom templates for deploying Citrix ADC in Microsoft Azure Cloud Services. All of the templates in this repository have been developed and maintained by the Citrix ADC engineering team.
 
 ## Citrix ADC: Load Balancer, SSL VPN, WAF& SSO
 
@@ -50,7 +50,7 @@ Citrix ADC VPX Azure Resource Manager (ARM) templates are designed to ensure eas
 The master branch of the repository generally has the latest version of the template. Older released versions are tagged appropriately as release with Citrix ADC release version. We additionally maintain dedicated branches hosting templates for supported Citrix ADC releases. These branches are named as `CitrixADC<ReleaseVersion>`.
 
 ## Support
-For production issues with the templates, please contact Citrix Support through your normal support channels. If you have fixes / suggestions for improvements or requests specific to ARM Templates, please raise an issue in this repository. 
+For production issues with the templates, please contact Citrix Support through your normal support channels. If you have fixes / suggestions for improvements or requests specific to ARM Templates, please raise an issue in this repository.
 
 ## Further reading
 - [Deploy a Citrix ADC VPX instance on Microsoft Azure](https://docs.citrix.com/en-us/citrix-adc/13/deploying-vpx/deploy-vpx-on-azure.html)

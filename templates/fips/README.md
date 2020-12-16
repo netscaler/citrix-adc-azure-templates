@@ -1,11 +1,12 @@
 # How to convert existing ARM templates to provision FIPS enabled VPX builds
 
+## Steps
 
 > Users can directly edit the ARM template in the portal using edit template and edit parameter option.
 
+### 1. Using edit template change the below param by adding  `netscalerfipsbyol`
 
-## 1. Using edit template change the below param by adding `netscalerfipsbyol`
-```json
+``` json
 "vmSku": {
     "defaultValue": "netscalerfipsbyol",
     "type": "String",
@@ -15,17 +16,17 @@
 }
 ```
 
+### 2. Now search for `netscalervpx-130` and replace it with `adcvpxfips-12-1` in two places
 
-## 2. Now search for `netscalervpx-130` and replace it with `adcvpxfips-12-1` in two places
-
-```json
+``` json
 "plan": {
     "name": "[parameters('vmSku')]",
     "publisher": "citrix",
     "product": "adcvpxfips-12-1"
 }
  ```
- ```json
+
+``` json
 "imageReference": {
     "publisher": "citrix",
     "offer": "adcvpxfips-12-1",
@@ -34,13 +35,11 @@
 }
 ```
 
+### 3. save the template and click Review+create button
 
+## Validation
 
-## 3. save the template and click Review+create button
-
-
-# Validation
-```bash
+``` bash
 [user@citrix] ➤ ssh demouser@x.x.x.x
 Warning: Permanently added 'x.x.x.x' (RSA) to the list of known hosts.
 ###############################################################################
@@ -57,6 +56,5 @@ Copyright (c) 1979, 1980, 1983, 1986, 1988, 1989, 1991, 1992, 1993, 1994
 The Regents of the University of California. All rights reserved.
 
 root@Citrix-ADC-VPX# sysctl netscaler.azure_descr
-netscaler.azure_descr: NetScaler VPX FIPS BYOL
+netscaler.azure_descr: Citrix ADC VPX FIPS BYOL
 ```
-

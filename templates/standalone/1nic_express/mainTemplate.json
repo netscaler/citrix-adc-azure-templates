@@ -1,9 +1,9 @@
 {
-	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion": "13.0.0.0",
 	"parameters": {
 		"virtualMachineName": {
-			"defaultValue": "NetScaler-VPX-Express",
+			"defaultValue": "Citrix ADC-VPX-Express",
 			"type": "string",
 			"metadata": {
 				"description": "Name of the Virtual Machine."
@@ -20,7 +20,6 @@
 			}
 		},
 		"adminUsername": {
-			"defaultValue": "nsroot",
 			"type": "String",
 			"metadata": {
 				"description": "Admin user name for the Virtual Machine."
@@ -55,14 +54,14 @@
 			"type": "String"
 		},
 		"networkInterfaceName": {
-			"defaultValue": "NetScaler-VPX-Express-Nic",
+			"defaultValue": "Citrix ADC-VPX-Express-Nic",
 			"type": "string",
 			"metadata": {
 				"description": "Name of the Virtual Network Interface Card."
 			}
 		},
 		"networkSecurityGroupName": {
-			"defaultValue": "NetScaler-VPX-Express-nsg",
+			"defaultValue": "Citrix ADC-VPX-Express-nsg",
 			"type": "string",
 			"metadata": {
 				"description": "Name of the Network Security Group."
@@ -94,14 +93,6 @@
 			"type": "String",
 			"metadata": {
 				"description": "Value of default subnet address range in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
-			}
-		},
-		"baseUrl": {
-			"defaultValue": "https://github.com/citrix/netscaler-azure-templates",
-			"type": "String",
-			"metadata": {
-				"artifactsBaseUrl": "",
-				"description": "The base URL for dependent assets"
 			}
 		}
 	},
