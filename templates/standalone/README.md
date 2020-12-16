@@ -1,21 +1,18 @@
-## Standalone NetScaler VPX 
-A single NetScaler VPX instance can be provisioned in Azure Resource Manager (ARM) portal in a standalone mode by creating the virtual machine and configuring other resources. 
+# Standalone Citrix ADC VPX
 
-For understanding architecture or manual deployment steps, refer 
-- [Configuring a Standalone NetScaler Instance in ARM](https://docs.citrix.com/en-us/netscaler/12-1/deploying-vpx/deploy-vpx-on-azure/configure-vpx-standalone-arm.html)
-- [Configuring Multiple IP Addresses for a Standalone NetScaler Instance](https://docs.citrix.com/en-us/netscaler/12-1/deploying-vpx/deploy-vpx-on-azure/configuring-multiple-ips-for-vpx-using-azure-resource-manager.html)
+A single Citrix ADC VPX instance can be provisioned in Azure Resource Manager (ARM) portal in a standalone mode by creating the virtual machine and configuring other resources.
 
-### Quick Launch Link
----
-#### NetScaler VPX Express
-Refer [templates/express_single_nic](../express_single_nic)
+## Quick Launch Link
 
----
-#### Standalone NetScaler VPX - 3 NICs 
-[![Standalone NetScaler VPX - 3 NICs ](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fstandalone%2FVPX_3nic%2FmainTemplate.json)
+|Template|Quick Launch|
+|--|--|
+|[1nic_express](./1nic_express)|[![Azure Deploy Button](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fcitrix-adc-azure-templates%2Fmaster%2Ftemplates%2Fstandalone%2F1nic_express%2FmainTemplate.json)|
+|[3nic](./3nic)|[![Azure Deploy Button](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fcitrix-adc-azure-templates%2Fmaster%2Ftemplates%2Fstandalone%2F3nic%2FmainTemplate.json)|
+|[3nic_backend_autoscale](./3nic_backend_autoscale)|[![Azure Deploy Button](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fcitrix-adc-azure-templates%2Fmaster%2Ftemplates%2Fstandalone%2F3nic_backend_autoscale%2FmainTemplate.json)|
 
----
-#### Standalone NetScaler VPX with autoscale - 3 NICs
-[![Standalone NetScaler VPX with autoscale - 3 NICs](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Fstandalone%2FVPX_3nic_backendAutoscale%2FmainTemplate.json)
+## For understanding of architecture or manual deployment steps
 
----
+* [Deploy a Citrix ADC VPX instance on Microsoft Azure](https://docs.citrix.com/en-us/citrix-adc/current-release/deploying-vpx/deploy-vpx-on-azure.html)
+* [Network architecture for Citrix ADC VPX instances on Microsoft Azure](https://docs.citrix.com/en-us/citrix-adc/current-release/deploying-vpx/deploy-vpx-on-azure/network-architecture-vpx-azure.html)
+* [Configure a Citrix ADC VPX standalone instance](https://docs.citrix.com/en-us/citrix-adc/current-release/deploying-vpx/deploy-vpx-on-azure/configure-vpx-standalone-arm.html)
+* [Configure multiple IP addresses for a Citrix ADC VPX standalone instance](https://docs.citrix.com/en-us/citrix-adc/current-release/deploying-vpx/deploy-vpx-on-azure/configuring-multiple-ips-for-vpx-using-azure-resource-manager.html)

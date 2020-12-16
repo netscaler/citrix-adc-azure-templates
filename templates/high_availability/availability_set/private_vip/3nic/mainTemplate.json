@@ -1,8 +1,9 @@
 {
-	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion": "13.0.0.0",
 	"parameters": {
 		"adminUsername": {
+			"defaultValue": "defaultUser",
 			"type": "String",
 			"metadata": {
 				"description": "Username for the Virtual Machines."
@@ -42,8 +43,9 @@
 				"netscaler3000enterprise",
 				"netscaler3000platinum"
 			],
+
 			"metadata": {
-				"description": "SKU of NetScaler Image."
+				"description": "SKU of Citrix ADC Image."
 			}
 		},
 		"vnetName": {
@@ -68,43 +70,43 @@
 			],
 			"type": "String"
 		},
-		"snetName-01": {
+		"subnetName-01": {
 			"defaultValue": "subnet_mgmt",
 			"type": "String",
 			"metadata": {
 				"description": "Name of Management Subnet. Enter existing subnet name if opting for existing Virtual Network"
 			}
 		},
-		"snetName-11": {
+		"SubnetName-11": {
 			"defaultValue": "subnet_client",
 			"type": "String",
 			"metadata": {
 				"description": "Name of Client Side subnet. Enter existing subnet name if opting for existing Virtual Network"
 			}
 		},
-		"snetName-12": {
+		"SubnetName-12": {
 			"defaultValue": "subnet_server",
 			"type": "String",
 			"metadata": {
 				"description": "Name of Server Side subnet. Enter existing subnet name if opting for existing Virtual Network"
 			}
 		},
-		"snetAddressPrefix-01": {
+		"subnetAddressPrefix-01": {
 			"defaultValue": "10.11.0.0/24",
 			"type": "String",
 			"metadata": {
 				"description": "Value of Management subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
 			}
 		},
-		"snetAddressPrefix-11": {
+		"SubnetAddressPrefix-11": {
 			"defaultValue": "10.11.1.0/24",
 			"type": "String",
 			"metadata": {
 				"description": "Value of Client side subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
 			}
 		},
-		"snetAddressPrefix-12": {
-			"defaultValue": "10.11.2.0/24",
+		"SubnetAddressPrefix-12": {
+			"defaultValue": "10.11.3.0/24",
 			"type": "String",
 			"metadata": {
 				"description": "Value of Server Side subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
@@ -112,48 +114,91 @@
 		}
 	},
 	"variables": {
-		"vmN": "ns-vpx",
-		"nicN": "ns-vpx-nic",
-		"nsgN": "ns-vpx-nic-nsg",
-		"lbN": "alb",
-		"bePoolN": "bepool-11",
-		"probeN": "probe-11",
-		"ipConfN": "ipconf-11",
-		"alb-pipN": "alb-publicip",
-		"mgmt-pipN-suffix": "-mgmt-publicip",
-		"saN": "[concat('vpxha', uniqueString(resourceGroup().id))]",
-		"vnetRg": "[if(equals(parameters('vnetResourceGroup'), ''), resourceGroup().name,parameters('vnetResourceGroup'))]",
-		"snetRef-01": "[resourceId(variables('vnetRg'),'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('snetName-01'))]",
-		"snetRef-11": "[resourceId(variables('vnetRg'),'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('snetName-11'))]",
-		"snetRef-12": "[resourceId(variables('vnetRg'),'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('snetName-12'))]",
-		"bePoolId": "[resourceId( 'Microsoft.Network/loadBalancers/backendAddressPools', variables('lbN'), variables('bePoolN'))]",
-		"probeId": "[resourceId( 'Microsoft.Network/loadBalancers/probes', variables('lbN'), variables('probeN'))]",
-		"ipConfId": "[resourceId( 'Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('lbN'), variables('ipConfN'))]"
+		"managementPublicIpSuffix": "-management-public-ip",
+		"storageAccountName": "[concat('stracct', uniqueString(resourceGroup().id))]",
+		"vnetResourceGroup": "[if(equals(parameters('vnetResourceGroup'), ''), resourceGroup().name,parameters('vnetResourceGroup'))]",
+		"vnetId": "[resourceId(variables('vnetResourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
+		"VpxNamePrefix": "ADC-VPX-",
+		"NicNamePrefix": "ADC-VPX-NIC-",
+		"NsgNamePrefix": "ADC-VPX-NSG-",
+		"AlbName": "ADC-Azure-Load-Balancer",
+		"AlbBackendRuleName": "ADC-Load-Balancer-Backend-rule",
+		"AlbHealthProbeRuleName": "ADC-Load-Balancer-Health-Probe-rule",
+		"AlbIpConfigRuleName": "ADC-Load-Balancer-Frontend-IP-Configuration-rule",
+		"AvailabilitySetName": "ADC-Availability-Set",
+		"subnetReference-01": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName-01'))]",
+		"SubnetReference-11": "[concat(variables('vnetId'), '/subnets/', parameters('SubnetName-11'))]",
+		"SubnetReference-12": "[concat(variables('vnetId'), '/subnets/', parameters('SubnetName-12'))]",
+		"AlbId": "[resourceId( 'Microsoft.Network/loadBalancers', variables('AlbName'))]",
+		"AlbBackendRuleId": "[concat(variables('AlbId'),'/backendAddressPools/', variables('AlbBackendRuleName'))]",
+		"AlbHealthProbeRuleId": "[concat(variables('AlbId'),'/probes/', variables('AlbHealthProbeRuleName'))]",
+		"AlbIpConfigRuleId": "[concat(variables('AlbId'),'/frontendIpConfigurations/', variables('AlbIpConfigRuleName'))]"
 	},
-	"resources": [{
-			"type": "Microsoft.Network/loadBalancers",
-			"name": "[variables('lbN')]",
+	"resources": [
+		{
+			"type": "Microsoft.Network/virtualNetworks",
+			"name": "[parameters('vnetName')]",
 			"apiVersion": "2017-10-01",
 			"location": "[resourceGroup().location]",
-			"sku": {
-				"name": "Standard"
+			"properties": {
+				"addressSpace": {
+					"addressPrefixes": [
+						"[parameters('subnetAddressPrefix-01')]",
+						"[parameters('SubnetAddressPrefix-11')]",
+						"[parameters('SubnetAddressPrefix-12')]"
+					]
+				},
+				"subnets": [{
+						"name": "[parameters('subnetName-01')]",
+						"properties": {
+							"addressPrefix": "[parameters('subnetAddressPrefix-01')]"
+						}
+					}, {
+						"name": "[parameters('SubnetName-11')]",
+						"properties": {
+							"addressPrefix": "[parameters('SubnetAddressPrefix-11')]"
+						}
+					}, {
+						"name": "[parameters('SubnetName-12')]",
+						"properties": {
+							"addressPrefix": "[parameters('SubnetAddressPrefix-12')]"
+						}
+					}
+				]
 			},
+			"condition": "[equals(parameters('vnetNewOrExisting'),'new')]"
+		}, {
+			"type": "Microsoft.Storage/storageAccounts",
+			"name": "[variables('storageAccountName')]",
+			"apiVersion": "2017-10-01",
+			"kind": "Storage",
+			"location": "[resourceGroup().location]",
+			"sku": {
+				"name": "Standard_LRS"
+			},
+			"properties": {}
+		},	{
+			"type": "Microsoft.Network/loadBalancers",
+			"name": "[variables('AlbName')]",
+			"apiVersion": "2018-08-01",
+			"location": "[resourceGroup().location]",
 			"properties": {
 				"frontendIPConfigurations": [{
-						"name": "[variables('ipConfN')]",
+						"name": "[variables('AlbIpConfigRuleName')]",
 						"properties": {
-							"publicIPAddress": {
-								"id": "[resourceId( 'Microsoft.Network/publicIpAddresses', variables('alb-pipN'))]"
+							"privateIPAllocationMethod": "Dynamic",
+							"subnet": {
+								"id": "[variables('SubnetReference-11')]"
 							}
 						}
 					}
 				],
 				"backendAddressPools": [{
-						"name": "[variables('bePoolN')]"
+						"name": "[variables('AlbBackendRuleName')]"
 					}
 				],
 				"probes": [{
-						"name": "[variables('probeN')]",
+						"name": "[variables('AlbHealthProbeRuleName')]",
 						"properties": {
 							"protocol": "tcp",
 							"port": 9000,
@@ -166,29 +211,39 @@
 						"name": "lbRule1",
 						"properties": {
 							"frontendIPConfiguration": {
-								"id": "[variables('ipConfId')]"
+								"id": "[variables('AlbIpConfigRuleId')]"
 							},
 							"frontendPort": 80,
 							"backendPort": 80,
 							"enableFloatingIP": true,
+							"idleTimeoutInMinutes": 4,
 							"protocol": "Tcp",
+							"loadDistribution": "Default",
 							"backendAddressPool": {
-								"id": "[variables('bePoolId')]"
+								"id": "[variables('AlbBackendRuleId')]"
 							},
 							"probe": {
-								"id": "[variables('probeId')]"
+								"id": "[variables('AlbHealthProbeRuleId')]"
 							}
 						}
 					}
 				]
 			},
 			"dependsOn": [
-				"[concat('Microsoft.Network/publicIpAddresses/', variables('alb-pipN'))]"
+				"[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]"
 			]
 		}, {
+			"type": "Microsoft.Compute/availabilitySets",
+			"name": "[variables('AvailabilitySetName')]",
+			"apiVersion": "2017-12-01",
+			"location": "[resourceGroup().location]",
+			"properties": {
+				"platformFaultDomainCount": 3,
+				"platformUpdateDomainCount": 20
+			}
+		}, {
 			"type": "Microsoft.Compute/virtualMachines",
-			"name": "[concat(variables('vmN'), copyIndex())]",
-			"zones": "[split(string(add(mod(copyIndex(),3),1)), ',')]",
+			"name": "[concat(variables('VpxNamePrefix'), copyIndex())]",
 			"apiVersion": "2017-12-01",
 			"location": "[resourceGroup().location]",
 			"copy": {
@@ -202,10 +257,10 @@
 			},
 			"properties": {
 				"osProfile": {
-					"computerName": "[concat(variables('vmN'), copyIndex())]",
+					"computerName": "[concat(variables('VpxNamePrefix'), copyIndex())]",
 					"adminUsername": "[parameters('adminUsername')]",
 					"adminPassword": "[parameters('adminPassword')]",
-					"customData": "[base64(concat('{\"username\":\"', parameters('adminUsername'), '\",\"ha_config\":{\"peer_node\":\"', reference(concat(variables('nicN'), sub(1, copyIndex()), '-01')).ipConfigurations[0].properties.privateIPAddress ,'\"},\"vpx_config\":{\"snip_11\":\"', reference(concat(variables('nicN'), copyIndex(), '-11')).ipConfigurations[0].properties.privateIPAddress ,'\",\"pvt_ip_12\":\"', reference(concat(variables('nicN'), copyIndex(), '-12')).ipConfigurations[0].properties.privateIPAddress ,'\",\"subnet_11\":\"', reference(variables('snetRef-11'), '2017-10-01', 'Full').properties.addressPrefix ,'\",\"subnet_12\":\"', reference(variables('snetRef-12'), '2017-10-01', 'Full').properties.addressPrefix, '\"}}'))]"
+					"customData": "[base64(concat('{\"username\":\"', parameters('adminUsername'), '\",\"ha_config\":{\"peer_node\":\"', reference(concat(variables('NicNamePrefix'), sub(1, copyIndex()), '-01')).ipConfigurations[0].properties.privateIPAddress ,'\"},\"vpx_config\":{\"snip_11\":\"', reference(concat(variables('NicNamePrefix'), copyIndex(), '-11')).ipConfigurations[0].properties.privateIPAddress ,'\",\"pvt_ip_12\":\"', reference(concat(variables('NicNamePrefix'), copyIndex(), '-12')).ipConfigurations[0].properties.privateIPAddress ,'\",\"subnet_11\":\"', reference(variables('SubnetReference-11'), '2017-10-01', 'Full').properties.addressPrefix ,'\",\"subnet_12\":\"', reference(variables('SubnetReference-12'), '2017-10-01', 'Full').properties.addressPrefix, '\"}}'))]"
 				},
 				"hardwareProfile": {
 					"vmSize": "[parameters('vmSize')]"
@@ -219,92 +274,55 @@
 					},
 					"osDisk": {
 						"createOption": "fromImage",
-						"managedDisk": {
-							"storageAccountType": "Standard_LRS"
-						}
+						"vhd": {
+							"uri": "[concat(reference(variables('storageAccountName'), '2017-10-01').primaryEndpoints.blob, 'vhds/osdisk', copyIndex(), '.vhd')]"
+						},
+						"name": "[concat(variables('VpxNamePrefix'), copyIndex())]"
 					},
 					"dataDisks": []
 				},
 				"networkProfile": {
 					"networkInterfaces": [{
-							"id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('nicN'), copyIndex(), '-01'))]",
+							"id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('NicNamePrefix'), copyIndex(), '-01'))]",
 							"properties": {
 								"primary": true
 							}
 						}, {
-							"id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('nicN'), copyIndex(), '-11'))]",
+							"id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('NicNamePrefix'), copyIndex(), '-11'))]",
 							"properties": {
 								"primary": false
 							}
 						}, {
-							"id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('nicN'), copyIndex(), '-12'))]",
+							"id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('NicNamePrefix'), copyIndex(), '-12'))]",
 							"properties": {
 								"primary": false
 							}
 						}
 					]
 				},
+				"availabilitySet": {
+					"id": "[resourceId('Microsoft.Compute/availabilitySets', variables('AvailabilitySetName'))]"
+				},
 				"diagnosticsProfile": {
 					"bootDiagnostics": {
 						"enabled": true,
-						"storageUri": "[reference(resourceId( 'Microsoft.Storage/storageAccounts', variables('saN')), '2017-10-01').primaryEndpoints['blob']]"
+						"storageUri": "[reference(resourceId( 'Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2017-10-01').primaryEndpoints['blob']]"
 					}
 				}
 			},
 			"dependsOn": [
-				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), copyIndex(), '-01')]",
-				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), sub(1,copyIndex()), '-01')]",
-				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), copyIndex(), '-11')]",
-				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), sub(1,copyIndex()), '-11')]",
-				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), copyIndex(), '-12')]",
-				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), sub(1,copyIndex()), '-12')]",
-				"[concat('Microsoft.Storage/storageAccounts/', variables('saN'))]"
+				"[concat('Microsoft.Network/networkInterfaces/', variables('NicNamePrefix'), copyIndex(), '-01')]",
+				"[concat('Microsoft.Network/networkInterfaces/', variables('NicNamePrefix'), sub(1,copyIndex()), '-01')]",
+				"[concat('Microsoft.Network/networkInterfaces/', variables('NicNamePrefix'), copyIndex(), '-11')]",
+				"[concat('Microsoft.Network/networkInterfaces/', variables('NicNamePrefix'), sub(1,copyIndex()), '-11')]",
+				"[concat('Microsoft.Network/networkInterfaces/', variables('NicNamePrefix'), copyIndex(), '-12')]",
+				"[concat('Microsoft.Network/networkInterfaces/', variables('NicNamePrefix'), sub(1,copyIndex()), '-12')]",
+				"[concat('Microsoft.Compute/availabilitySets/', variables('AvailabilitySetName'))]",
+				"[concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]"
 			]
-		}, {
-			"type": "Microsoft.Storage/storageAccounts",
-			"name": "[variables('saN')]",
-			"apiVersion": "2017-10-01",
-			"kind": "Storage",
-			"location": "[resourceGroup().location]",
-			"sku": {
-				"name": "Standard_LRS"
-			},
-			"properties": {}
-		}, {
-			"type": "Microsoft.Network/virtualNetworks",
-			"name": "[parameters('vnetName')]",
-			"apiVersion": "2017-10-01",
-			"location": "[resourceGroup().location]",
-			"properties": {
-				"addressSpace": {
-					"addressPrefixes": [
-						"[parameters('snetAddressPrefix-01')]",
-						"[parameters('snetAddressPrefix-11')]",
-						"[parameters('snetAddressPrefix-12')]"
-					]
-				},
-				"subnets": [{
-						"name": "[parameters('snetName-01')]",
-						"properties": {
-							"addressPrefix": "[parameters('snetAddressPrefix-01')]"
-						}
-					}, {
-						"name": "[parameters('snetName-11')]",
-						"properties": {
-							"addressPrefix": "[parameters('snetAddressPrefix-11')]"
-						}
-					}, {
-						"name": "[parameters('snetName-12')]",
-						"properties": {
-							"addressPrefix": "[parameters('snetAddressPrefix-12')]"
-						}
-					}
-				]
-			},
-			"condition": "[equals(parameters('vnetNewOrExisting'),'new')]"
-		}, {
+		},  {
 			"type": "Microsoft.Network/networkInterfaces",
-			"name": "[concat(variables('nicN'), copyIndex(), '-01')]",
+			"name": "[concat(variables('NicNamePrefix'), copyIndex(), '-01')]",
 			"apiVersion": "2017-10-01",
 			"location": "[resourceGroup().location]",
 			"copy": {
@@ -313,30 +331,30 @@
 			},
 			"properties": {
 				"ipConfigurations": [{
-						"name": "ipconfig01",
+						"name": "ipconfig1",
 						"properties": {
 							"subnet": {
-								"id": "[variables('snetRef-01')]"
+								"id": "[variables('subnetReference-01')]"
 							},
 							"privateIPAllocationMethod": "Dynamic",
 							"publicIpAddress": {
-								"id": "[resourceId('Microsoft.Network/publicIpAddresses', concat(variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix')))]"
+								"id": "[resourceId('Microsoft.Network/publicIpAddresses', concat(variables('VpxNamePrefix'), copyIndex(), variables('managementPublicIpSuffix')))]"
 							}
 						}
 					}
 				],
 				"networkSecurityGroup": {
-					"id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('nsgN'), copyIndex(), '-01'))]"
+					"id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('NsgNamePrefix'), copyIndex(), '-01'))]"
 				}
 			},
 			"dependsOn": [
 				"[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
-				"[concat('Microsoft.Network/publicIpAddresses/', variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix'))]",
-				"[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'), copyIndex(), '-01')]"
+				"[concat('Microsoft.Network/publicIpAddresses/', variables('VpxNamePrefix'), copyIndex(), variables('managementPublicIpSuffix'))]",
+				"[concat('Microsoft.Network/networkSecurityGroups/', variables('NsgNamePrefix'), copyIndex(), '-01')]"
 			]
 		}, {
 			"type": "Microsoft.Network/networkInterfaces",
-			"name": "[concat(variables('nicN'), copyIndex(), '-11')]",
+			"name": "[concat(variables('NicNamePrefix'), copyIndex(), '-11')]",
 			"apiVersion": "2017-10-01",
 			"location": "[resourceGroup().location]",
 			"copy": {
@@ -345,31 +363,31 @@
 			},
 			"properties": {
 				"ipConfigurations": [{
-						"name": "ipconfig11",
+						"name": "ipconfig1",
 						"properties": {
 							"subnet": {
-								"id": "[variables('snetRef-11')]"
+								"id": "[variables('SubnetReference-11')]"
 							},
 							"privateIPAllocationMethod": "Dynamic",
 							"loadBalancerBackendAddressPools": [{
-									"id": "[variables('bePoolId')]"
+									"id": "[variables('AlbBackendRuleId')]"
 								}
 							]
 						}
 					}
 				],
 				"networkSecurityGroup": {
-					"id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('nsgN'), copyIndex(), '-11'))]"
+					"id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('NsgNamePrefix'), copyIndex(), '-11'))]"
 				}
 			},
 			"dependsOn": [
 				"[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
-				"[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'), copyIndex(), '-11')]",
-				"[concat('Microsoft.Network/loadBalancers/', variables('lbN'))]"
+				"[concat('Microsoft.Network/networkSecurityGroups/', variables('NsgNamePrefix'), copyIndex(), '-11')]",
+				"[concat('Microsoft.Network/loadBalancers/', variables('AlbName'))]"
 			]
 		}, {
 			"type": "Microsoft.Network/networkInterfaces",
-			"name": "[concat(variables('nicN'), copyIndex(), '-12')]",
+			"name": "[concat(variables('NicNamePrefix'), copyIndex(), '-12')]",
 			"apiVersion": "2017-10-01",
 			"location": "[resourceGroup().location]",
 			"copy": {
@@ -378,55 +396,38 @@
 			},
 			"properties": {
 				"ipConfigurations": [{
-						"name": "ipconfig12",
+						"name": "ipconfig1",
 						"properties": {
 							"subnet": {
-								"id": "[variables('snetRef-12')]"
+								"id": "[variables('SubnetReference-12')]"
 							},
 							"privateIPAllocationMethod": "Dynamic"
 						}
 					}
 				],
 				"networkSecurityGroup": {
-					"id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('nsgN'), copyIndex(), '-12'))]"
+					"id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('NsgNamePrefix'), copyIndex(), '-12'))]"
 				}
 			},
 			"dependsOn": [
 				"[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
-				"[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'), copyIndex(), '-12')]"
+				"[concat('Microsoft.Network/networkSecurityGroups/', variables('NsgNamePrefix'), copyIndex(), '-12')]"
 			]
 		}, {
 			"type": "Microsoft.Network/publicIpAddresses",
-			"name": "[variables('alb-pipN')]",
+			"name": "[concat(variables('VpxNamePrefix'), copyIndex(), variables('managementPublicIpSuffix'))]",
 			"apiVersion": "2017-10-01",
 			"location": "[resourceGroup().location]",
-			"sku": {
-				"name": "Standard"
-			},
-			"properties": {
-				"publicIpAllocationMethod": "static",
-				"publicIpAddressVersion": "IPv4"
-			}
-		}, {
-			"type": "Microsoft.Network/publicIpAddresses",
-			"name": "[concat(variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix'))]",
-			"zones": "[split(string(add(mod(copyIndex(),3),1)), ',')]",
-			"apiVersion": "2017-10-01",
-			"location": "[resourceGroup().location]",
-			"sku": {
-				"name": "Standard"
-			},
 			"copy": {
 				"name": "ipcopy",
 				"count": 2
 			},
 			"properties": {
-				"publicIpAllocationMethod": "static",
-				"publicIpAddressVersion": "IPv4"
+				"publicIpAllocationMethod": "Dynamic"
 			}
 		}, {
 			"type": "Microsoft.Network/networkSecurityGroups",
-			"name": "[concat(variables('nsgN'), copyIndex(), '-01')]",
+			"name": "[concat(variables('NsgNamePrefix'), copyIndex(), '-01')]",
 			"apiVersion": "2017-10-01",
 			"location": "[resourceGroup().location]",
 			"copy": {
@@ -463,7 +464,7 @@
 			}
 		}, {
 			"type": "Microsoft.Network/networkSecurityGroups",
-			"name": "[concat(variables('nsgN'), copyIndex(), '-11')]",
+			"name": "[concat(variables('NsgNamePrefix'), copyIndex(), '-11')]",
 			"apiVersion": "2017-10-01",
 			"location": "[resourceGroup().location]",
 			"copy": {
@@ -488,7 +489,7 @@
 			}
 		}, {
 			"type": "Microsoft.Network/networkSecurityGroups",
-			"name": "[concat(variables('nsgN'), copyIndex(), '-12')]",
+			"name": "[concat(variables('NsgNamePrefix'), copyIndex(), '-12')]",
 			"apiVersion": "2017-10-01",
 			"location": "[resourceGroup().location]",
 			"copy": {

@@ -1,5 +1,5 @@
 {
-	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion": "13.0.0.0",
 	"parameters": {
 		"adminUsername": {
@@ -43,7 +43,7 @@
 				"netscaler3000platinum"
 			],
 			"metadata": {
-				"description": "SKU of NetScaler Image."
+				"description": "SKU of Citrix ADC Image."
 			}
 		},
 		"vnetName": {
@@ -109,18 +109,6 @@
 			"metadata": {
 				"description": "Value of Server Side subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
 			}
-		},
-		"applicationID": {
-			"type": "String",
-			"metadata": {
-				"description": "Application Id of registered App in Azure Active Directory"
-			}
-		},
-		"ApplicationSecretKey": {
-			"type": "SecureString",
-			"metadata": {
-				"description": "API Access Key/Password Value of registed App in Azure Active Directory"
-			}
 		}
 	},
 	"variables": {
@@ -134,7 +122,6 @@
 		"alb-pipN": "alb-publicip",
 		"mgmt-pipN-suffix": "-mgmt-publicip",
 		"saN": "[concat('vpxha', uniqueString(resourceGroup().id))]",
-		"tenantID": "[subscription().tenantId]",
 		"vnetRg": "[if(equals(parameters('vnetResourceGroup'), ''), resourceGroup().name,parameters('vnetResourceGroup'))]",
 		"snetRef-01": "[resourceId(variables('vnetRg'),'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('snetName-01'))]",
 		"snetRef-11": "[resourceId(variables('vnetRg'),'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('snetName-11'))]",
@@ -218,7 +205,7 @@
 					"computerName": "[concat(variables('vmN'), copyIndex())]",
 					"adminUsername": "[parameters('adminUsername')]",
 					"adminPassword": "[parameters('adminPassword')]",
-					"customData": "[base64(concat('{\"username\":\"', parameters('adminUsername'), '\",\"ha_config\":{\"peer_node\":\"', reference(concat(variables('nicN'), sub(1, copyIndex()), '-01')).ipConfigurations[0].properties.privateIPAddress ,'\"},\"azure_app_config\":{\"tenant_id\":\"', variables('tenantID') ,'\",\"app_id\":\"', parameters('applicationID') ,'\",\"secret_key\":\"', parameters('ApplicationSecretKey') ,'\"},\"vpx_config\":{\"snip_11\":\"', reference(concat(variables('nicN'), copyIndex(), '-11')).ipConfigurations[0].properties.privateIPAddress ,'\",\"pvt_ip_12\":\"', reference(concat(variables('nicN'), copyIndex(), '-12')).ipConfigurations[0].properties.privateIPAddress ,'\",\"subnet_11\":\"', reference(variables('snetRef-11'), '2017-10-01', 'Full').properties.addressPrefix ,'\",\"subnet_12\":\"', reference(variables('snetRef-12'), '2017-10-01', 'Full').properties.addressPrefix, '\"}}'))]"
+					"customData": "[base64(concat('{\"username\":\"', parameters('adminUsername'), '\",\"ha_config\":{\"peer_node\":\"', reference(concat(variables('nicN'), sub(1, copyIndex()), '-01')).ipConfigurations[0].properties.privateIPAddress ,'\"},\"vpx_config\":{\"snip_11\":\"', reference(concat(variables('nicN'), copyIndex(), '-11')).ipConfigurations[0].properties.privateIPAddress ,'\",\"pvt_ip_12\":\"', reference(concat(variables('nicN'), copyIndex(), '-12')).ipConfigurations[0].properties.privateIPAddress ,'\",\"subnet_11\":\"', reference(variables('snetRef-11'), '2017-10-01', 'Full').properties.addressPrefix ,'\",\"subnet_12\":\"', reference(variables('snetRef-12'), '2017-10-01', 'Full').properties.addressPrefix, '\"}}'))]"
 				},
 				"hardwareProfile": {
 					"vmSize": "[parameters('vmSize')]"

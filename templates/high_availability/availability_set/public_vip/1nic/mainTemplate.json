@@ -1,9 +1,8 @@
 {
-	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion": "13.0.0.0",
 	"parameters": {
 		"adminUsername": {
-			"defaultValue": "nsroot",
 			"type": "String",
 			"metadata": {
 				"description": "Username for the Virtual Machines."
@@ -45,7 +44,7 @@
 			],
 
 			"metadata": {
-				"description": "SKU of NetScaler Image."
+				"description": "SKU of Citrix ADC Image."
 			}
 		},
 		"vnetName": {
@@ -70,66 +69,18 @@
 			],
 			"type": "String"
 		},
-		"snetName-01": {
-			"defaultValue": "subnet_mgmt",
+		"snetName": {
+			"defaultValue": "subnet",
 			"type": "String",
 			"metadata": {
-				"description": "Name of Management Subnet. Enter existing subnet name if opting for existing Virtual Network"
+				"description": "Name of Subnet. Enter existing subnet name if opting for existing Virtual Network"
 			}
 		},
-		"snetName-11": {
-			"defaultValue": "subnet_client",
-			"type": "String",
-			"metadata": {
-				"description": "Name of Client Side subnet. Enter existing subnet name if opting for existing Virtual Network"
-			}
-		},
-		"snetName-12": {
-			"defaultValue": "subnet_server",
-			"type": "String",
-			"metadata": {
-				"description": "Name of Server Side subnet. Enter existing subnet name if opting for existing Virtual Network"
-			}
-		},
-		"snetAddressPrefix-01": {
+		"snetAddressPrefix": {
 			"defaultValue": "10.11.0.0/24",
 			"type": "String",
 			"metadata": {
-				"description": "Value of Management subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
-			}
-		},
-		"snetAddressPrefix-11": {
-			"defaultValue": "10.11.1.0/24",
-			"type": "String",
-			"metadata": {
-				"description": "Value of Client side subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
-			}
-		},
-		"snetAddressPrefix-12": {
-			"defaultValue": "10.11.2.0/24",
-			"type": "String",
-			"metadata": {
-				"description": "Value of Server Side subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
-			}
-		},
-		"applicationID": {
-			"type": "String",
-			"metadata": {
-				"description": "Application Id of registered App in Azure Active Directory"
-			}
-		},
-		"ApplicationSecretKey": {
-			"type": "SecureString",
-			"metadata": {
-				"description": "API Access Key/Password Value of registed App in Azure Active Directory"
-			}
-		},
-		"baseUrl": {
-			"defaultValue": "https://github.com/citrix/netscaler-azure-templates",
-			"type": "String",
-			"metadata": {
-				"artifactsBaseUrl": "",
-				"description": "The base URL for dependent assets"
+				"description": "Value of subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
 			}
 		}
 	},
@@ -145,12 +96,9 @@
 		"alb-pipN": "alb-publicip",
 		"mgmt-pipN-suffix": "-mgmt-publicip",
 		"saN": "[concat('vpxha', uniqueString(resourceGroup().id))]",
-		"tenantID": "[subscription().tenantId]",
 		"vnetRg": "[if(equals(parameters('vnetResourceGroup'), ''), resourceGroup().name,parameters('vnetResourceGroup'))]",
 		"vnetId": "[resourceId(variables('vnetRg'), 'Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
-		"snetRef-01": "[concat(variables('vnetId'), '/subnets/', parameters('snetName-01'))]",
-		"snetRef-11": "[concat(variables('vnetId'), '/subnets/', parameters('snetName-11'))]",
-		"snetRef-12": "[concat(variables('vnetId'), '/subnets/', parameters('snetName-12'))]",
+		"snetRef": "[concat(variables('vnetId'), '/subnets/', parameters('snetName'))]",
 		"lbId": "[resourceId( 'Microsoft.Network/loadBalancers', variables('lbN'))]",
 		"bePoolId": "[concat(variables('lbId'),'/backendAddressPools/', variables('bePoolN'))]",
 		"probeId": "[concat(variables('lbId'),'/probes/', variables('probeN'))]",
@@ -216,8 +164,8 @@
 			"apiVersion": "2017-12-01",
 			"location": "[resourceGroup().location]",
 			"properties": {
-				"platformFaultDomainCount": "3",
-				"platformUpdateDomainCount": "20"
+				"platformFaultDomainCount": 3,
+				"platformUpdateDomainCount": 20
 			}
 		}, {
 			"type": "Microsoft.Compute/virtualMachines",
@@ -238,7 +186,7 @@
 					"computerName": "[concat(variables('vmN'), copyIndex())]",
 					"adminUsername": "[parameters('adminUsername')]",
 					"adminPassword": "[parameters('adminPassword')]",
-					"customData": "[base64(concat('{\"username\":\"', parameters('adminUsername'), '\",\"ha_config\":{\"peer_node\":\"', reference(concat(variables('nicN'), sub(1, copyIndex()), '-01')).ipConfigurations[0].properties.privateIPAddress ,'\"},\"azure_app_config\":{\"tenant_id\":\"', variables('tenantID') ,'\",\"app_id\":\"', parameters('applicationID') ,'\",\"secret_key\":\"', parameters('ApplicationSecretKey') ,'\"},\"vpx_config\":{\"snip_11\":\"', reference(concat(variables('nicN'), copyIndex(), '-11')).ipConfigurations[0].properties.privateIPAddress ,'\",\"pvt_ip_12\":\"', reference(concat(variables('nicN'), copyIndex(), '-12')).ipConfigurations[0].properties.privateIPAddress ,'\",\"subnet_11\":\"', reference(variables('snetRef-11'), '2017-10-01', 'Full').properties.addressPrefix ,'\",\"subnet_12\":\"', reference(variables('snetRef-12'), '2017-10-01', 'Full').properties.addressPrefix, '\"}}'))]"
+					"customData": "[base64(concat('{\"username\":\"', parameters('adminUsername'), '\",\"ha_config\":{\"peer_node\":\"', reference(concat(variables('nicN'), sub(1, copyIndex()))).ipConfigurations[0].properties.privateIPAddress ,'\"},\"vpx_config\":{\"snip_11\":\"', reference(concat(variables('nicN'), copyIndex())).ipConfigurations[1].properties.privateIPAddress ,'\",\"pvt_ip_12\":\"', reference(concat(variables('nicN'), copyIndex())).ipConfigurations[2].properties.privateIPAddress ,'\",\"subnet_11\":\"', reference(variables('snetRef'), '2017-10-01', 'Full').properties.addressPrefix ,'\",\"subnet_12\":\"', reference(variables('snetRef'), '2017-10-01', 'Full').properties.addressPrefix, '\"}}'))]"
 				},
 				"hardwareProfile": {
 					"vmSize": "[parameters('vmSize')]"
@@ -261,19 +209,9 @@
 				},
 				"networkProfile": {
 					"networkInterfaces": [{
-							"id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('nicN'), copyIndex(), '-01'))]",
+							"id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('nicN'), copyIndex()))]",
 							"properties": {
 								"primary": true
-							}
-						}, {
-							"id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('nicN'), copyIndex(), '-11'))]",
-							"properties": {
-								"primary": false
-							}
-						}, {
-							"id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('nicN'), copyIndex(), '-12'))]",
-							"properties": {
-								"primary": false
 							}
 						}
 					]
@@ -289,12 +227,8 @@
 				}
 			},
 			"dependsOn": [
-				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), copyIndex(), '-01')]",
-				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), sub(1,copyIndex()), '-01')]",
-				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), copyIndex(), '-11')]",
-				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), sub(1,copyIndex()), '-11')]",
-				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), copyIndex(), '-12')]",
-				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), sub(1,copyIndex()), '-12')]",
+				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), copyIndex())]",
+				"[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), sub(1,copyIndex()))]",
 				"[concat('Microsoft.Compute/availabilitySets/', variables('avsN'))]",
 				"[concat('Microsoft.Storage/storageAccounts/', variables('saN'))]"
 			]
@@ -316,25 +250,13 @@
 			"properties": {
 				"addressSpace": {
 					"addressPrefixes": [
-						"[parameters('snetAddressPrefix-01')]",
-						"[parameters('snetAddressPrefix-11')]",
-						"[parameters('snetAddressPrefix-12')]"
+						"[parameters('snetAddressPrefix')]"
 					]
 				},
 				"subnets": [{
-						"name": "[parameters('snetName-01')]",
+						"name": "[parameters('snetName')]",
 						"properties": {
-							"addressPrefix": "[parameters('snetAddressPrefix-01')]"
-						}
-					}, {
-						"name": "[parameters('snetName-11')]",
-						"properties": {
-							"addressPrefix": "[parameters('snetAddressPrefix-11')]"
-						}
-					}, {
-						"name": "[parameters('snetName-12')]",
-						"properties": {
-							"addressPrefix": "[parameters('snetAddressPrefix-12')]"
+							"addressPrefix": "[parameters('snetAddressPrefix')]"
 						}
 					}
 				]
@@ -342,51 +264,31 @@
 			"condition": "[equals(parameters('vnetNewOrExisting'),'new')]"
 		}, {
 			"type": "Microsoft.Network/networkInterfaces",
-			"name": "[concat(variables('nicN'), copyIndex(), '-01')]",
+			"name": "[concat(variables('nicN'), copyIndex())]",
 			"apiVersion": "2017-10-01",
 			"location": "[resourceGroup().location]",
 			"copy": {
-				"name": "niccopy-01",
+				"name": "niccopy",
 				"count": 2
 			},
 			"properties": {
 				"ipConfigurations": [{
-						"name": "ipconfig1",
+						"name": "nsip",
 						"properties": {
+							"primary": true,
 							"subnet": {
-								"id": "[variables('snetRef-01')]"
+								"id": "[variables('snetRef')]"
 							},
 							"privateIPAllocationMethod": "Dynamic",
 							"publicIpAddress": {
 								"id": "[resourceId('Microsoft.Network/publicIpAddresses', concat(variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix')))]"
 							}
 						}
-					}
-				],
-				"networkSecurityGroup": {
-					"id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('nsgN'), copyIndex(), '-01'))]"
-				}
-			},
-			"dependsOn": [
-				"[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
-				"[concat('Microsoft.Network/publicIpAddresses/', variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix'))]",
-				"[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'), copyIndex(), '-01')]"
-			]
-		}, {
-			"type": "Microsoft.Network/networkInterfaces",
-			"name": "[concat(variables('nicN'), copyIndex(), '-11')]",
-			"apiVersion": "2017-10-01",
-			"location": "[resourceGroup().location]",
-			"copy": {
-				"name": "niccopy-11",
-				"count": 2
-			},
-			"properties": {
-				"ipConfigurations": [{
-						"name": "ipconfig1",
+					}, {
+						"name": "vip",
 						"properties": {
 							"subnet": {
-								"id": "[variables('snetRef-11')]"
+								"id": "[variables('snetRef')]"
 							},
 							"privateIPAllocationMethod": "Dynamic",
 							"loadBalancerBackendAddressPools": [{
@@ -394,44 +296,25 @@
 								}
 							]
 						}
-					}
-				],
-				"networkSecurityGroup": {
-					"id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('nsgN'), copyIndex(), '-11'))]"
-				}
-			},
-			"dependsOn": [
-				"[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
-				"[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'), copyIndex(), '-11')]",
-				"[concat('Microsoft.Network/loadBalancers/', variables('lbN'))]"
-			]
-		}, {
-			"type": "Microsoft.Network/networkInterfaces",
-			"name": "[concat(variables('nicN'), copyIndex(), '-12')]",
-			"apiVersion": "2017-10-01",
-			"location": "[resourceGroup().location]",
-			"copy": {
-				"name": "niccopy-12",
-				"count": 2
-			},
-			"properties": {
-				"ipConfigurations": [{
-						"name": "ipconfig1",
+					}, {
+						"name": "snip",
 						"properties": {
 							"subnet": {
-								"id": "[variables('snetRef-12')]"
+								"id": "[variables('snetRef')]"
 							},
 							"privateIPAllocationMethod": "Dynamic"
 						}
 					}
 				],
 				"networkSecurityGroup": {
-					"id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('nsgN'), copyIndex(), '-12'))]"
+					"id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('nsgN'), copyIndex()))]"
 				}
 			},
 			"dependsOn": [
 				"[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
-				"[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'), copyIndex(), '-12')]"
+				"[concat('Microsoft.Network/publicIpAddresses/', variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix'))]",
+				"[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'), copyIndex())]",
+				"[concat('Microsoft.Network/loadBalancers/', variables('lbN'))]"
 			]
 		}, {
 			"type": "Microsoft.Network/publicIpAddresses",
@@ -455,11 +338,11 @@
 			}
 		}, {
 			"type": "Microsoft.Network/networkSecurityGroups",
-			"name": "[concat(variables('nsgN'), copyIndex(), '-01')]",
+			"name": "[concat(variables('nsgN'), copyIndex())]",
 			"apiVersion": "2017-10-01",
 			"location": "[resourceGroup().location]",
 			"copy": {
-				"name": "nsgcopy-01",
+				"name": "nsgcopy",
 				"count": 2
 			},
 			"properties": {
@@ -482,56 +365,6 @@
 							"sourceAddressPrefix": "*",
 							"protocol": "TCP",
 							"destinationPortRange": "9001",
-							"access": "Allow",
-							"direction": "Inbound",
-							"sourcePortRange": "*",
-							"destinationAddressPrefix": "*"
-						}
-					}
-				]
-			}
-		}, {
-			"type": "Microsoft.Network/networkSecurityGroups",
-			"name": "[concat(variables('nsgN'), copyIndex(), '-11')]",
-			"apiVersion": "2017-10-01",
-			"location": "[resourceGroup().location]",
-			"copy": {
-				"name": "nsgcopy-11",
-				"count": 2
-			},
-			"properties": {
-				"securityRules": [{
-						"name": "default-allow-ssh",
-						"properties": {
-							"priority": 1000,
-							"sourceAddressPrefix": "*",
-							"protocol": "TCP",
-							"destinationPortRange": "22",
-							"access": "Allow",
-							"direction": "Inbound",
-							"sourcePortRange": "*",
-							"destinationAddressPrefix": "*"
-						}
-					}
-				]
-			}
-		}, {
-			"type": "Microsoft.Network/networkSecurityGroups",
-			"name": "[concat(variables('nsgN'), copyIndex(), '-12')]",
-			"apiVersion": "2017-10-01",
-			"location": "[resourceGroup().location]",
-			"copy": {
-				"name": "nsgcopy-12",
-				"count": 2
-			},
-			"properties": {
-				"securityRules": [{
-						"name": "default-allow-ssh",
-						"properties": {
-							"priority": 1000,
-							"sourceAddressPrefix": "*",
-							"protocol": "TCP",
-							"destinationPortRange": "22",
 							"access": "Allow",
 							"direction": "Inbound",
 							"sourcePortRange": "*",
