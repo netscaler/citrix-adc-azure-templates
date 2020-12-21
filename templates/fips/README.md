@@ -1,60 +1,16 @@
-# How to convert existing ARM templates to provision FIPS enabled VPX builds
+# FIPS complaint Citrix ADC ARM templates
 
-## Steps
+> Refer [here](./convert_any_template_to_FIPS_template.md) to convert any existing non-FIPS template to FIPS template. However, the below templates are a dedicated templates for FIPS
 
-> Users can directly edit the ARM template in the portal using edit template and edit parameter option.
+## Quick Launch
 
-### 1. Using edit template change the below param by adding  `netscalerfipsbyol`
+|Template|Quick Launch|
+|--|--|
+|[FIPS Standalone BYOL](./standalone/3nic)|[![Azure Deploy Button](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fcitrix-adc-azure-templates%2Fmaster%2Ftemplates%2Ffips%2Fstandalone%2F3nic%2FmainTemplate.json)|
+|[HA (Availability Set) BYOL](./high_availability/availability_set/public_vip/3nic)|[![Azure Deploy Button](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Ffips%2Fhigh_availability%2Favailability_set%2Fpublic_vip%2F3nic%2FmainTemplate.json)|
+|[HA (Availability Zone) BYOL](./high_availability/availability_zone/public_vip/3nic)|[![Azure Deploy Button](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Ffips%2Fhigh_availability%2Favailability_zone%2Fpublic_vip%2F3nic%2FmainTemplate.json)|
 
-``` json
-"vmSku": {
-    "defaultValue": "netscalerfipsbyol",
-    "type": "String",
-    "allowedValues": [
-        "netscalerfipsbyol"
-    ]
-}
-```
+## Further Reafing
 
-### 2. Now search for `netscalervpx-130` and replace it with `adcvpxfips-12-1` in two places
-
-``` json
-"plan": {
-    "name": "[parameters('vmSku')]",
-    "publisher": "citrix",
-    "product": "adcvpxfips-12-1"
-}
- ```
-
-``` json
-"imageReference": {
-    "publisher": "citrix",
-    "offer": "adcvpxfips-12-1",
-    "sku": "[parameters('vmSku')]",
-    "version": "latest"
-}
-```
-
-### 3. save the template and click Review+create button
-
-## Validation
-
-``` bash
-[user@citrix] ➤ ssh demouser@x.x.x.x
-Warning: Permanently added 'x.x.x.x' (RSA) to the list of known hosts.
-###############################################################################
-# #
-# WARNING: Access to this system is for authorized users only #
-# Disconnect IMMEDIATELY if you are not an authorized user! #
-# #
-###############################################################################
-
-demouser@x.x.x.x's password:
-> shell
-Copyright (c) 1992-2013 The FreeBSD Project.
-Copyright (c) 1979, 1980, 1983, 1986, 1988, 1989, 1991, 1992, 1993, 1994
-The Regents of the University of California. All rights reserved.
-
-root@Citrix-ADC-VPX# sysctl netscaler.azure_descr
-netscaler.azure_descr: Citrix ADC VPX FIPS BYOL
-```
+* [Citrix ADC VPX is now FIPS 140-2 Level 1 Certified](https://www.citrix.com/blogs/2020/12/07/citrix-adc-vpx-is-now-fips-140-2-level-1-certified/)
+* [Citrix ADC FIPS Compliance/Validation FAQ](https://support.citrix.com/article/CTX284897)
