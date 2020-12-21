@@ -1,4 +1,4 @@
-# FIPS
+# FIPS complaint Citrix ADC ARM templates
 
 > Refer [here](./convert_any_template_to_FIPS_template.md) to convert any existing non-FIPS template to FIPS template. However, the below templates are a dedicated templates for FIPS
 
