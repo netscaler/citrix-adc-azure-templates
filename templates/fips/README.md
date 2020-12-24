@@ -10,7 +10,7 @@
 |[HA (Availability Set) BYOL](./high_availability/availability_set/public_vip/3nic)|[![Azure Deploy Button](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Ffips%2Fhigh_availability%2Favailability_set%2Fpublic_vip%2F3nic%2FmainTemplate.json)|
 |[HA (Availability Zone) BYOL](./high_availability/availability_zone/public_vip/3nic)|[![Azure Deploy Button](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fnetscaler-azure-templates%2Fmaster%2Ftemplates%2Ffips%2Fhigh_availability%2Favailability_zone%2Fpublic_vip%2F3nic%2FmainTemplate.json)|
 
-## Further Reafing
+## Further Reading
 
 * [Citrix ADC VPX is now FIPS 140-2 Level 1 Certified](https://www.citrix.com/blogs/2020/12/07/citrix-adc-vpx-is-now-fips-140-2-level-1-certified/)
 * [Citrix ADC FIPS Compliance/Validation FAQ](https://support.citrix.com/article/CTX284897)
