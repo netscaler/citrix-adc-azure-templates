@@ -1,6 +1,6 @@
 {
 	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-	"contentVersion": "13.0.0.0",
+	"contentVersion": "130.2020.12.21",
 	"parameters": {
 		"adminUsername": {
 			"type": "String",
@@ -96,6 +96,20 @@
 			"metadata": {
 				"description": "Value of Server Side subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
 			}
+        },
+        "acceleratedNetworkingClient": {
+            "type": "Bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Accelerated Networking for Client Interface. Enables low latency and high throughput on the network interface.[Learn more](https://docs.microsoft.com/en-gb/azure/virtual-network/create-vm-accelerated-networking-cli)"
+            }
+        },
+        "acceleratedNetworkingServer": {
+            "type": "Bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Accelerated Networking for Server Interface. Enables low latency and high throughput on the network interface.[Learn more](https://docs.microsoft.com/en-gb/azure/virtual-network/create-vm-accelerated-networking-cli)"
+            }
 		}
 	},
 	"variables": {
@@ -119,7 +133,21 @@
 		"probeId": "[concat(variables('lbId'),'/probes/', variables('probeN'))]",
 		"ipConfId": "[concat(variables('lbId'),'/frontendIpConfigurations/', variables('ipConfN'))]"
 	},
-	"resources": [{
+	"resources": [
+		{
+			"apiVersion": "2020-06-01",
+			"name": "pid-860090ee-e92b-44e5-9694-c9e4e4dc605c",
+			"type": "Microsoft.Resources/deployments",
+			"properties": {
+				"mode": "Incremental",
+				"template": {
+					"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+					"contentVersion": "130.2020.12.21",
+					"resources": []
+				}
+			}
+		},
+		{
 			"type": "Microsoft.Network/loadBalancers",
 			"name": "[variables('lbN')]",
 			"apiVersion": "2017-10-01",
@@ -300,6 +328,7 @@
 				"count": 2
 			},
 			"properties": {
+                "enableAcceleratedNetworking": "[parameters('acceleratedNetworkingClient')]",
 				"ipConfigurations": [{
 						"name": "nsip",
 						"properties": {
@@ -346,6 +375,7 @@
 				"count": 2
 			},
 			"properties": {
+                "enableAcceleratedNetworking": "[parameters('acceleratedNetworkingServer')]",
 				"ipConfigurations": [{
 						"name": "snip",
 						"properties": {

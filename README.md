@@ -1,5 +1,9 @@
 # Citrix ADC (formerly known as Netscaler) Azure Templates
 
+## Latest updates ⚡
+
+> **Accelerated Networking** capability is enabled to every Citrix ADC interface using ARM templates, by default. [Learn More](https://docs.citrix.com/en-us/citrix-adc/current-release/deploying-vpx/deploy-vpx-on-azure/configure-vpx-to-use-azure-accelerated-networking.html)
+
 ## Introduction
 
 Welcome to the GitHub repository for Citrix ADC (formerly known as NetScaler) ARM(Azure Resource Manager) templates. This repository hosts [Citrix ADC](https://www.citrix.com/en-in/products/citrix-adc/) custom templates for deploying Citrix ADC in Microsoft Azure Cloud Services. All of the templates in this repository have been developed and maintained by the Citrix ADC engineering team.
