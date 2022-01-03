@@ -32,6 +32,18 @@
                 "description": "Size of Azure Virtual Machine."
             }
         },
+        "ADCVersion": {
+            "type": "string",
+            "defaultValue": "netscalervpx-131",
+            "allowedValues": [
+                "netscalervpx-131",
+                "netscalervpx-130",
+                "netscalervpx-121"
+            ],
+            "metadata": {
+                "description": "Citrix ADC Version. netscalervpx-131 is recommended. Note: 5000Mbps is supported only in 13.1 version."
+            }
+        },
         "vmSku": {
             "defaultValue": "netscalerbyol",
             "type": "String",
@@ -48,7 +60,10 @@
                 "netscaler1000platinum",
                 "netscaler3000standard",
                 "netscaler3000enterprise",
-                "netscaler3000platinum"
+                "netscaler3000platinum",
+                "netscaler5000standard",
+                "netscaler5000enterprise",
+                "netscaler5000platinum"
             ],
 
             "metadata": {
@@ -187,7 +202,7 @@
             "plan": {
                 "name": "[parameters('vmSku')]",
                 "publisher": "citrix",
-                "product": "netscalervpx-130"
+                "product": "[parameters('ADCVersion')]"
             },
             "properties": {
                 "osProfile": {
@@ -202,7 +217,7 @@
                 "storageProfile": {
                     "imageReference": {
                         "publisher": "citrix",
-                        "offer": "netscalervpx-130",
+                        "offer": "[parameters('ADCVersion')]",
                         "sku": "[parameters('vmSku')]",
                         "version": "latest"
                     },

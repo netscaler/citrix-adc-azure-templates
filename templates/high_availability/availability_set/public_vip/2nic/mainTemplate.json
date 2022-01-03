@@ -25,6 +25,18 @@
 				"description": "Size of Azure Virtual Machine."
 			}
 		},
+		"ADCVersion": {
+			"type": "string",
+			"defaultValue": "netscalervpx-131",
+			"allowedValues": [
+				"netscalervpx-131",
+				"netscalervpx-130",
+				"netscalervpx-121"
+			],
+			"metadata": {
+				"description": "Citrix ADC Version. netscalervpx-131 is recommended. Note: 5000Mbps is supported only in 13.1 version."
+			}
+		},
 		"vmSku": {
 			"defaultValue": "netscalerbyol",
 			"type": "String",
@@ -41,7 +53,10 @@
 				"netscaler1000platinum",
 				"netscaler3000standard",
 				"netscaler3000enterprise",
-				"netscaler3000platinum"
+				"netscaler3000platinum",
+				"netscaler5000standard",
+				"netscaler5000enterprise",
+				"netscaler5000platinum"
 			],
 			"metadata": {
 				"description": "SKU of Citrix ADC Image."
@@ -96,20 +111,20 @@
 			"metadata": {
 				"description": "Value of Server Side subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
 			}
-        },
-        "acceleratedNetworkingClient": {
-            "type": "Bool",
-            "defaultValue": true,
-            "metadata": {
-                "description": "Accelerated Networking for Client Interface. Enables low latency and high throughput on the network interface.[Learn more](https://docs.microsoft.com/en-gb/azure/virtual-network/create-vm-accelerated-networking-cli)"
-            }
-        },
-        "acceleratedNetworkingServer": {
-            "type": "Bool",
-            "defaultValue": true,
-            "metadata": {
-                "description": "Accelerated Networking for Server Interface. Enables low latency and high throughput on the network interface.[Learn more](https://docs.microsoft.com/en-gb/azure/virtual-network/create-vm-accelerated-networking-cli)"
-            }
+		},
+		"acceleratedNetworkingClient": {
+			"type": "Bool",
+			"defaultValue": true,
+			"metadata": {
+				"description": "Accelerated Networking for Client Interface. Enables low latency and high throughput on the network interface.[Learn more](https://docs.microsoft.com/en-gb/azure/virtual-network/create-vm-accelerated-networking-cli)"
+			}
+		},
+		"acceleratedNetworkingServer": {
+			"type": "Bool",
+			"defaultValue": true,
+			"metadata": {
+				"description": "Accelerated Networking for Server Interface. Enables low latency and high throughput on the network interface.[Learn more](https://docs.microsoft.com/en-gb/azure/virtual-network/create-vm-accelerated-networking-cli)"
+			}
 		}
 	},
 	"variables": {
@@ -153,7 +168,8 @@
 			"apiVersion": "2017-10-01",
 			"location": "[resourceGroup().location]",
 			"properties": {
-				"frontendIPConfigurations": [{
+				"frontendIPConfigurations": [
+					{
 						"name": "[variables('ipConfN')]",
 						"properties": {
 							"publicIPAddress": {
@@ -162,11 +178,13 @@
 						}
 					}
 				],
-				"backendAddressPools": [{
+				"backendAddressPools": [
+					{
 						"name": "[variables('bePoolN')]"
 					}
 				],
-				"probes": [{
+				"probes": [
+					{
 						"name": "[variables('probeN')]",
 						"properties": {
 							"protocol": "tcp",
@@ -176,7 +194,8 @@
 						}
 					}
 				],
-				"loadBalancingRules": [{
+				"loadBalancingRules": [
+					{
 						"name": "lbRule1",
 						"properties": {
 							"frontendIPConfiguration": {
@@ -201,7 +220,8 @@
 			"dependsOn": [
 				"[concat('Microsoft.Network/publicIpAddresses/', variables('alb-pipN'))]"
 			]
-		}, {
+		},
+		{
 			"type": "Microsoft.Compute/availabilitySets",
 			"name": "[variables('avsN')]",
 			"apiVersion": "2017-12-01",
@@ -210,7 +230,8 @@
 				"platformFaultDomainCount": 3,
 				"platformUpdateDomainCount": 20
 			}
-		}, {
+		},
+		{
 			"type": "Microsoft.Compute/virtualMachines",
 			"name": "[concat(variables('vmN'), copyIndex())]",
 			"apiVersion": "2017-12-01",
@@ -222,7 +243,7 @@
 			"plan": {
 				"name": "[parameters('vmSku')]",
 				"publisher": "citrix",
-				"product": "netscalervpx-130"
+				"product": "[parameters('ADCVersion')]"
 			},
 			"properties": {
 				"osProfile": {
@@ -237,7 +258,7 @@
 				"storageProfile": {
 					"imageReference": {
 						"publisher": "citrix",
-						"offer": "netscalervpx-130",
+						"offer": "[parameters('ADCVersion')]",
 						"sku": "[parameters('vmSku')]",
 						"version": "latest"
 					},
@@ -251,12 +272,14 @@
 					"dataDisks": []
 				},
 				"networkProfile": {
-					"networkInterfaces": [{
+					"networkInterfaces": [
+						{
 							"id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('nicN'), copyIndex(), '-11'))]",
 							"properties": {
 								"primary": true
 							}
-						}, {
+						},
+						{
 							"id": "[resourceId( 'Microsoft.Network/networkInterfaces', concat(variables('nicN'), copyIndex(), '-12'))]",
 							"properties": {
 								"primary": false
@@ -282,7 +305,8 @@
 				"[concat('Microsoft.Compute/availabilitySets/', variables('avsN'))]",
 				"[concat('Microsoft.Storage/storageAccounts/', variables('saN'))]"
 			]
-		}, {
+		},
+		{
 			"type": "Microsoft.Storage/storageAccounts",
 			"name": "[variables('saN')]",
 			"apiVersion": "2017-10-01",
@@ -292,7 +316,8 @@
 				"name": "Standard_LRS"
 			},
 			"properties": {}
-		}, {
+		},
+		{
 			"type": "Microsoft.Network/virtualNetworks",
 			"name": "[parameters('vnetName')]",
 			"apiVersion": "2017-10-01",
@@ -304,12 +329,14 @@
 						"[parameters('snetAddressPrefix-12')]"
 					]
 				},
-				"subnets": [{
+				"subnets": [
+					{
 						"name": "[parameters('snetName-11')]",
 						"properties": {
 							"addressPrefix": "[parameters('snetAddressPrefix-11')]"
 						}
-					}, {
+					},
+					{
 						"name": "[parameters('snetName-12')]",
 						"properties": {
 							"addressPrefix": "[parameters('snetAddressPrefix-12')]"
@@ -318,7 +345,8 @@
 				]
 			},
 			"condition": "[equals(parameters('vnetNewOrExisting'),'new')]"
-		}, {
+		},
+		{
 			"type": "Microsoft.Network/networkInterfaces",
 			"name": "[concat(variables('nicN'), copyIndex(), '-11')]",
 			"apiVersion": "2017-10-01",
@@ -328,8 +356,9 @@
 				"count": 2
 			},
 			"properties": {
-                "enableAcceleratedNetworking": "[parameters('acceleratedNetworkingClient')]",
-				"ipConfigurations": [{
+				"enableAcceleratedNetworking": "[parameters('acceleratedNetworkingClient')]",
+				"ipConfigurations": [
+					{
 						"name": "nsip",
 						"properties": {
 							"primary": true,
@@ -341,14 +370,16 @@
 								"id": "[resourceId('Microsoft.Network/publicIpAddresses', concat(variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix')))]"
 							}
 						}
-					}, {
+					},
+					{
 						"name": "vip",
 						"properties": {
 							"subnet": {
 								"id": "[variables('snetRef-11')]"
 							},
 							"privateIPAllocationMethod": "Dynamic",
-							"loadBalancerBackendAddressPools": [{
+							"loadBalancerBackendAddressPools": [
+								{
 									"id": "[variables('bePoolId')]"
 								}
 							]
@@ -365,7 +396,8 @@
 				"[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'), copyIndex(), '-11')]",
 				"[concat('Microsoft.Network/loadBalancers/', variables('lbN'))]"
 			]
-		}, {
+		},
+		{
 			"type": "Microsoft.Network/networkInterfaces",
 			"name": "[concat(variables('nicN'), copyIndex(), '-12')]",
 			"apiVersion": "2017-10-01",
@@ -375,8 +407,9 @@
 				"count": 2
 			},
 			"properties": {
-                "enableAcceleratedNetworking": "[parameters('acceleratedNetworkingServer')]",
-				"ipConfigurations": [{
+				"enableAcceleratedNetworking": "[parameters('acceleratedNetworkingServer')]",
+				"ipConfigurations": [
+					{
 						"name": "snip",
 						"properties": {
 							"subnet": {
@@ -394,7 +427,8 @@
 				"[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
 				"[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'), copyIndex(), '-12')]"
 			]
-		}, {
+		},
+		{
 			"type": "Microsoft.Network/publicIpAddresses",
 			"name": "[variables('alb-pipN')]",
 			"apiVersion": "2017-10-01",
@@ -402,7 +436,8 @@
 			"properties": {
 				"publicIpAllocationMethod": "Dynamic"
 			}
-		}, {
+		},
+		{
 			"type": "Microsoft.Network/publicIpAddresses",
 			"name": "[concat(variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix'))]",
 			"apiVersion": "2017-10-01",
@@ -414,7 +449,8 @@
 			"properties": {
 				"publicIpAllocationMethod": "Dynamic"
 			}
-		}, {
+		},
+		{
 			"type": "Microsoft.Network/networkSecurityGroups",
 			"name": "[concat(variables('nsgN'), copyIndex(), '-11')]",
 			"apiVersion": "2017-10-01",
@@ -424,7 +460,8 @@
 				"count": 2
 			},
 			"properties": {
-				"securityRules": [{
+				"securityRules": [
+					{
 						"name": "default-allow-ssh",
 						"properties": {
 							"priority": 1000,
@@ -436,7 +473,8 @@
 							"sourcePortRange": "*",
 							"destinationAddressPrefix": "*"
 						}
-					}, {
+					},
+					{
 						"name": "autoscale-daemon",
 						"properties": {
 							"priority": 1001,
@@ -451,7 +489,8 @@
 					}
 				]
 			}
-		}, {
+		},
+		{
 			"type": "Microsoft.Network/networkSecurityGroups",
 			"name": "[concat(variables('nsgN'), copyIndex(), '-12')]",
 			"apiVersion": "2017-10-01",
@@ -461,7 +500,8 @@
 				"count": 2
 			},
 			"properties": {
-				"securityRules": [{
+				"securityRules": [
+					{
 						"name": "default-allow-ssh",
 						"properties": {
 							"priority": 1000,

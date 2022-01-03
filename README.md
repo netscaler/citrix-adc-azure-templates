@@ -2,6 +2,8 @@
 
 ## Latest updates ⚡
 
+> 13.1 version is now available to deploy.
+
 > **Accelerated Networking** capability is enabled to every Citrix ADC interface using ARM templates, by default. [Learn More](https://docs.citrix.com/en-us/citrix-adc/current-release/deploying-vpx/deploy-vpx-on-azure/configure-vpx-to-use-azure-accelerated-networking.html)
 
 ## Introduction
