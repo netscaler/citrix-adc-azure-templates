@@ -152,6 +152,17 @@
             "metadata": {
                 "description": "Who can access the management interface via SSH? Provide an address range using CIDR notation (e.g. 192.168.99.0/24 or 2001:1234::/64), or an IP address (e.g. 192.168.99.0 or 2001:1234::). You can also provide a comma-separated list of IP addresses or address ranges using either IPv4 or IPv6. "
             }
+        },
+        "assignManagementPublicIP": {
+            "type": "string",
+            "allowedValues": [
+                "yes",
+                "no"
+            ],
+            "defaultValue": "yes",
+            "metadata": {
+                "description": "Public Management IP. Enables public IP address on the management interface. This is useful if you want to access the management interface from a different location."
+            }
         }
     },
     "variables": {
@@ -170,7 +181,37 @@
         "snetRef-12": "[resourceId(variables('vnetRg'),'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('snetName-12'))]",
         "bePoolId": "[resourceId( 'Microsoft.Network/loadBalancers/backendAddressPools', variables('lbN'), variables('bePoolN'))]",
         "probeId": "[resourceId( 'Microsoft.Network/loadBalancers/probes', variables('lbN'), variables('probeN'))]",
-        "ipConfId": "[resourceId( 'Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('lbN'), variables('ipConfN'))]"
+        "ipConfId": "[resourceId( 'Microsoft.Network/loadBalancers/frontendIpConfigurations', variables('lbN'), variables('ipConfN'))]",
+        "ipconfig0Properties_assign": {
+            "subnet": {
+                "id": "[variables('snetRef-01')]"
+            },
+            "privateIPAllocationMethod": "Dynamic",
+            "publicIpAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIpAddresses', concat(variables('vmN'), '0', variables('mgmt-pipN-suffix')))]"
+            }
+        },
+        "ipconfig0Properties_no_assign": {
+            "subnet": {
+                "id": "[variables('snetRef-01')]"
+            },
+            "privateIPAllocationMethod": "Dynamic"
+        },
+        "ipconfig1Properties_assign": {
+            "subnet": {
+                "id": "[variables('snetRef-01')]"
+            },
+            "privateIPAllocationMethod": "Dynamic",
+            "publicIpAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIpAddresses', concat(variables('vmN'), '1', variables('mgmt-pipN-suffix')))]"
+            }
+        },
+        "ipconfig1Properties_no_assign": {
+            "subnet": {
+                "id": "[variables('snetRef-01')]"
+            },
+            "privateIPAllocationMethod": "Dynamic"
+        }
     },
     "resources": [
         {
@@ -375,37 +416,46 @@
         },
         {
             "type": "Microsoft.Network/networkInterfaces",
-            "name": "[concat(variables('nicN'), copyIndex(), '-01')]",
+            "name": "[concat(variables('nicN'), '0', '-01')]",
             "apiVersion": "2017-10-01",
             "location": "[resourceGroup().location]",
-            "copy": {
-                "name": "niccopy-01",
-                "count": 2
-            },
             "properties": {
                 "enableAcceleratedNetworking": "[parameters('acceleratedNetworkingManagement')]",
                 "ipConfigurations": [
                     {
                         "name": "ipconfig01",
-                        "properties": {
-                            "subnet": {
-                                "id": "[variables('snetRef-01')]"
-                            },
-                            "privateIPAllocationMethod": "Dynamic",
-                            "publicIpAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIpAddresses', concat(variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix')))]"
-                            }
-                        }
+                        "properties": "[if(equals(parameters('assignManagementPublicIP'), 'yes'), variables('ipconfig0Properties_assign'), variables('ipconfig0Properties_no_assign'))]"
                     }
                 ],
                 "networkSecurityGroup": {
-                    "id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('nsgN'), copyIndex(), '-01'))]"
+                    "id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('nsgN'), '0', '-01'))]"
                 }
             },
             "dependsOn": [
                 "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
-                "[concat('Microsoft.Network/publicIpAddresses/', variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix'))]",
-                "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'), copyIndex(), '-01')]"
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'), '0', '-01')]"
+            ]
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "name": "[concat(variables('nicN'), '1', '-01')]",
+            "apiVersion": "2017-10-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "enableAcceleratedNetworking": "[parameters('acceleratedNetworkingManagement')]",
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig01",
+                        "properties": "[if(equals(parameters('assignManagementPublicIP'), 'yes'), variables('ipconfig1Properties_assign'), variables('ipconfig1Properties_no_assign'))]"
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[resourceId( 'Microsoft.Network/networkSecurityGroups', concat(variables('nsgN'), '1', '-01'))]"
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', parameters('vnetName'))]",
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('nsgN'), '1', '-01')]"
             ]
         },
         {
@@ -478,6 +528,7 @@
         },
         {
             "type": "Microsoft.Network/publicIpAddresses",
+            "condition": "[equals(parameters('assignManagementPublicIP'), 'yes')]",
             "name": "[concat(variables('vmN'), copyIndex(), variables('mgmt-pipN-suffix'))]",
             "zones": "[split(string(add(mod(copyIndex(),3),1)), ',')]",
             "apiVersion": "2017-10-01",
