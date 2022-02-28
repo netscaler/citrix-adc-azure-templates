@@ -15,14 +15,10 @@
             }
         },
         "vmSize": {
-            "defaultValue": "Standard_DS3_v2",
+            "defaultValue": "Standard_D2s_v4",
             "type": "String",
-            "allowedValues": [
-                "Standard_DS3_v2",
-                "Standard_DS4_v2"
-            ],
             "metadata": {
-                "description": "Size of Azure Virtual Machine."
+                "description": "Size of Citrix ADC VPX Virtual Machine. Please choose the correct vmSize based on the VPX license and the number of NICs you require. [Learn More](https://docs.citrix.com/en-us/citrix-adc/current-release/deploying-vpx/deploy-vpx-on-azure.html#citrix-adc-vpx-licensing)"
             }
         },
         "ADCVersion": {
