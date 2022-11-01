@@ -123,6 +123,12 @@
                 "description": "Value of Server Side subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
             }
         },
+        "snetForAdminSSH": {
+            "type": "String",
+            "metadata": {
+                "description": "Value of the Admin subnet in CIDR form through which he can manage the ADC"
+            }
+        },
         "acceleratedNetworkingManagement": {
             "type": "Bool",
             "defaultValue": true,
@@ -520,7 +526,7 @@
                         "name": "default-allow-ssh",
                         "properties": {
                             "priority": 1000,
-                            "sourceAddressPrefix": "*",
+                            "sourceAddressPrefix": "[parameters('snetForAdminSSH')]",
                             "protocol": "TCP",
                             "destinationPortRange": "22",
                             "access": "Allow",
