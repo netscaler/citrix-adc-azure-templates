@@ -14,13 +14,13 @@
 				"description": "Password for the Virtual Machines."
 			}
 		},
-        "vmSize": {
-            "defaultValue": "Standard_D2s_v4",
-            "type": "String",
-            "metadata": {
-                "description": "Size of Citrix ADC VPX Virtual Machine. Please choose the correct vmSize based on the VPX license and the number of NICs you require. [Learn More](https://docs.citrix.com/en-us/citrix-adc/current-release/deploying-vpx/deploy-vpx-on-azure.html#citrix-adc-vpx-licensing)"
-            }
-        },
+		"vmSize": {
+			"defaultValue": "Standard_D2s_v4",
+			"type": "String",
+			"metadata": {
+				"description": "Size of Citrix ADC VPX Virtual Machine. Please choose the correct vmSize based on the VPX license and the number of NICs you require. [Learn More](https://docs.citrix.com/en-us/citrix-adc/current-release/deploying-vpx/deploy-vpx-on-azure.html#citrix-adc-vpx-licensing)"
+			}
+		},
 		"ADCVersion": {
 			"type": "string",
 			"defaultValue": "netscalervpx-131",
@@ -458,12 +458,12 @@
 			"properties": {
 				"securityRules": [
 					{
-						"name": "default-allow-ssh",
+						"name": "allow-http-https-from-client",
 						"properties": {
 							"priority": 1000,
 							"sourceAddressPrefix": "*",
 							"protocol": "TCP",
-							"destinationPortRange": "22",
+							"destinationPortRanges": [ 80, 443 ],
 							"access": "Allow",
 							"direction": "Inbound",
 							"sourcePortRange": "*",
@@ -494,23 +494,6 @@
 			"copy": {
 				"name": "nsgcopy-12",
 				"count": 2
-			},
-			"properties": {
-				"securityRules": [
-					{
-						"name": "default-allow-ssh",
-						"properties": {
-							"priority": 1000,
-							"sourceAddressPrefix": "*",
-							"protocol": "TCP",
-							"destinationPortRange": "22",
-							"access": "Allow",
-							"direction": "Inbound",
-							"sourcePortRange": "*",
-							"destinationAddressPrefix": "*"
-						}
-					}
-				]
 			}
 		}
 	]
