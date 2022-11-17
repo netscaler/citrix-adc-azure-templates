@@ -14,12 +14,6 @@
                 "description": "Password for the Virtual Machines."
             }
         },
-        "rpcNodePassword": {
-            "type": "SecureString",
-            "metadata": {
-                "description": "Password for the RPC Node for communication between primary and secondary VPXs. [Learn More about RPCNode](https://docs.citrix.com/en-us/citrix-adc/current-release/getting-started-with-citrix-adc/change-rpc-node-password.html)"
-            }
-        },
         "vmSize": {
             "defaultValue": "Standard_D8s_v4",
             "type": "String",
@@ -122,25 +116,11 @@
                 "description": "Value of Client side subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
             }
         },
-        "subnetAddressMask-11": {
-            "defaultValue": "255.255.255.0",
-            "type": "string",
-            "metadata": {
-                "description": "Subnet Mask for the above Client side subnet Address Prefix"
-            }
-        },
         "snetAddressPrefix-12": {
             "defaultValue": "10.11.2.0/24",
             "type": "String",
             "metadata": {
                 "description": "Value of Server Side subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
-            }
-        },
-        "subnetAddressMask-12": {
-            "defaultValue": "255.255.255.0",
-            "type": "string",
-            "metadata": {
-                "description": "Subnet Mask for the above Server side subnet Address Prefix"
             }
         },
         "restrictedSshAccessCIDR": {
@@ -295,18 +275,7 @@
                     "computerName": "[concat(variables('vmN'), copyIndex())]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
-                    "customData": "[base64(concat('
-                        \n<NS-PRE-BOOT-CONFIG> ',
-                            '\n<NS-CONFIG>',
-                                '\nset systemparameter -promptString %u@%s',
-                                '\nadd ha node 1 ', reference(concat(variables('nicN'), sub(1, copyIndex()),'-01')).ipConfigurations[0].properties.privateIPAddress,
-                                '\nadd ns ip ', reference(concat(variables('nicN'), copyIndex(), '-11')).ipConfigurations[0].properties.privateIPAddress, ' ', parameters('subnetAddressMask-11'), ' -type SNIP',
-                                '\nadd ns ip ', reference(concat(variables('nicN'), copyIndex(), '-12')).ipConfigurations[0].properties.privateIPAddress, ' ', parameters('subnetAddressMask-12'), ' -type SNIP',
-                                '\nset ns rpcNode ', reference(concat(variables('nicN'), copyIndex(),'-01')).ipConfigurations[0].properties.privateIPAddress,' -password ', parameters('rpcNodePassword'), ' -secure YES',
-                                '\nset ns rpcNode ', reference(concat(variables('nicN'), sub(1, copyIndex()),'-01')).ipConfigurations[0].properties.privateIPAddress,' -password ', parameters('rpcNodePassword'), ' -secure YES',
-                            '\n</NS-CONFIG> ',
-                        '\n</NS-PRE-BOOT-CONFIG>'
-                                    ))]"
+                    "customData": "[base64(concat('{\"username\":\"', parameters('adminUsername'), '\",\"ha_config\":{\"peer_node\":\"', reference(concat(variables('nicN'), sub(1, copyIndex()), '-01')).ipConfigurations[0].properties.privateIPAddress ,'\"},\"vpx_config\":{\"snip_11\":\"', reference(concat(variables('nicN'), copyIndex(), '-11')).ipConfigurations[0].properties.privateIPAddress ,'\",\"pvt_ip_12\":\"', reference(concat(variables('nicN'), copyIndex(), '-12')).ipConfigurations[0].properties.privateIPAddress ,'\",\"subnet_11\":\"', reference(variables('snetRef-11'), '2017-10-01', 'Full').properties.addressPrefix ,'\",\"subnet_12\":\"', reference(variables('snetRef-12'), '2017-10-01', 'Full').properties.addressPrefix, '\"}}'))]"
                 },
                 "hardwareProfile": {
                     "vmSize": "[parameters('vmSize')]"
@@ -360,7 +329,6 @@
                 }
             },
             "dependsOn": [
-                "[concat('Microsoft.Network/publicIpAddresses/', variables('alb-pipN'))]",
                 "[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), copyIndex(), '-01')]",
                 "[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), sub(1,copyIndex()), '-01')]",
                 "[concat('Microsoft.Network/networkInterfaces/', variables('nicN'), copyIndex(), '-11')]",
@@ -600,7 +568,7 @@
                             "priority": 1000,
                             "sourceAddressPrefix": "*",
                             "protocol": "TCP",
-                            "destinationPortRanges": [ "80", "443" ],
+                            "destinationPortRanges": [80,443],
                             "access": "Allow",
                             "direction": "Inbound",
                             "sourcePortRange": "*",
