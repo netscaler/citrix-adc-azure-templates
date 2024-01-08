@@ -419,7 +419,7 @@
                         "name": "default-allow-ssh",
                         "properties": {
                             "priority": 1000,
-                            "sourceAddressPrefix": "parameters('restrictedSshAccessCIDR')",
+                            "sourceAddressPrefix": "[parameters('restrictedSshAccessCIDR')]",
                             "protocol": "TCP",
                             "destinationPortRange": "22",
                             "access": "Allow",
