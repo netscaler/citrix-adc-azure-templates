@@ -110,6 +110,12 @@
             "metadata": {
                 "description": "Value of default subnet address range in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
             }
+        },
+        "restrictedSshAccessCIDR": {
+            "type": "String",
+            "metadata": {
+                "description": "Who can access the management interface via SSH? Provide an address range using CIDR notation (e.g. 192.168.99.0/24 or 2001:1234::/64), or an IP address (e.g. 192.168.99.0 or 2001:1234::). You can also provide a comma-separated list of IP addresses or address ranges using either IPv4 or IPv6. "
+            }
         }
     },
     "variables": {
@@ -314,7 +320,7 @@
                             "protocol": "TCP",
                             "access": "Allow",
                             "direction": "Inbound",
-                            "sourceAddressPrefix": "Internet",
+                            "sourceAddressPrefix": "parameters('restrictedSshAccessCIDR')",
                             "sourcePortRange": "*",
                             "destinationAddressPrefix": "*",
                             "destinationPortRange": "22"
@@ -328,7 +334,7 @@
                             "protocol": "Tcp",
                             "access": "Allow",
                             "direction": "Inbound",
-                            "sourceAddressPrefix": "Internet",
+                            "sourceAddressPrefix": "parameters('restrictedSshAccessCIDR')",
                             "sourcePortRange": "*",
                             "destinationAddressPrefix": "*",
                             "destinationPortRange": "443"
