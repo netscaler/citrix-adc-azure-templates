@@ -406,7 +406,7 @@
                         "name": "default-allow-ssh",
                         "properties": {
                             "priority": 1000,
-                            "sourceAddressPrefix": "parameters('restrictedSshAccessCIDR')",
+                            "sourceAddressPrefix": "[parameters('restrictedSshAccessCIDR')]",
                             "protocol": "TCP",
                             "destinationPortRange": "22",
                             "access": "Allow",
@@ -445,6 +445,29 @@
                             "sourceAddressPrefix": "*",
                             "protocol": "TCP",
                             "destinationPortRange": "443",
+                            "access": "Allow",
+                            "direction": "Inbound",
+                            "sourcePortRange": "*",
+                            "destinationAddressPrefix": "*"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "[concat(variables('nsgN'), '-server')]",
+            "apiVersion": "2017-10-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "default-allow-ssh",
+                        "properties": {
+                            "priority": 1000,
+                            "sourceAddressPrefix": "*",
+                            "protocol": "TCP",
+                            "destinationPortRange": "22",
                             "access": "Allow",
                             "direction": "Inbound",
                             "sourcePortRange": "*",
