@@ -29,14 +29,14 @@
         },
         "ADCVersion": {
             "type": "string",
-            "defaultValue": "netscalervpx-131",
+            "defaultValue": "netscalervpx-141",
             "allowedValues": [
+                "netscalervpx-141",
                 "netscalervpx-131",
-                "netscalervpx-130",
-                "netscalervpx-121"
+                "netscalervpx-130"
             ],
             "metadata": {
-                "description": "Citrix ADC Version. netscalervpx-131 is recommended. Note: 5000Mbps is supported only in 13.1 version."
+                "description": "Citrix ADC Version. netscalervpx-141 is recommended. Note: 5000Mbps is supported after (including) 13.1 version."
             }
         },
         "vmSku": {
@@ -170,18 +170,6 @@
                 "description": "Accelerated Networking for Server Interface. Enables low latency and high throughput on the network interface.[Learn more](https://docs.microsoft.com/en-gb/azure/virtual-network/create-vm-accelerated-networking-cli)"
             }
         }
-        // "applicationID": {
-        //     "type": "String",
-        //     "metadata": {
-        //         "description": "Application Id of registered App in Azure Active Directory"
-        //     }
-        // },
-        // "ApplicationSecretKey": {
-        //     "type": "SecureString",
-        //     "metadata": {
-        //         "description": "API Access Key/Password Value of registed App in Azure Active Directory"
-        //     }
-        // }
     },
     "variables": {
         "vmN": "ns-vpx",

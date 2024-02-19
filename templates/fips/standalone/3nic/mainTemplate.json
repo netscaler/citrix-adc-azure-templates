@@ -32,6 +32,16 @@
                 "description": "Size of Azure Virtual Machine."
             }
         },
+        "ADCVersion": {
+            "type": "string",
+            "defaultValue": "adcvpxfips-13-1",
+            "allowedValues": [
+                "adcvpxfips-13-1"
+            ],
+            "metadata": {
+                "description": "Citrix ADC Version"
+            }
+        },
         "rpcNodePassword": {
             "type": "SecureString",
             "metadata": {
@@ -163,7 +173,7 @@
             "plan": {
                 "name": "[parameters('vmSku')]",
                 "publisher": "citrix",
-                "product": "adcvpxfips-12-1"
+                "product": "[parameters('ADCVersion')]"
             },
             "properties": {
                 "osProfile": {
@@ -178,7 +188,7 @@
                 "storageProfile": {
                     "imageReference": {
                         "publisher": "citrix",
-                        "offer": "adcvpxfips-12-1",
+                        "offer": "[parameters('ADCVersion')]",
                         "sku": "[parameters('vmSku')]",
                         "version": "latest"
                     },

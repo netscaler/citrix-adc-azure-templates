@@ -36,14 +36,14 @@
         },
         "ADCVersion": {
             "type": "string",
-            "defaultValue": "netscalervpx-131",
+            "defaultValue": "netscalervpx-141",
             "allowedValues": [
+                "netscalervpx-141",
                 "netscalervpx-131",
-                "netscalervpx-130",
-                "netscalervpx-121"
+                "netscalervpx-130"
             ],
             "metadata": {
-                "description": "Citrix ADC Version. netscalervpx-131 is recommended. Note: 5000Mbps is supported only in 13.1 version."
+                "description": "Citrix ADC Version. netscalervpx-141 is recommended. Note: 5000Mbps is supported after (including) 13.1 version."
             }
         },
         "vmSku": {
