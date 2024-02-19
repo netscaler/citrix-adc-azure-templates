@@ -16,6 +16,12 @@
                 "description": "Size of Citrix ADC VPX Virtual Machine. Please choose the correct vmSize based on the VPX license and the number of NICs you require. [Learn More](https://docs.citrix.com/en-us/citrix-adc/current-release/deploying-vpx/deploy-vpx-on-azure.html#citrix-adc-vpx-licensing)"
             }
         },
+        "rpcNodePassword": {
+            "type": "SecureString",
+            "metadata": {
+                "description": "Password for the RPC Node for communication between primary and secondary VPXs. [Learn More about RPCNode](https://docs.citrix.com/en-us/citrix-adc/current-release/getting-started-with-citrix-adc/change-rpc-node-password.html)"
+            }
+        },
         "ADCVersion": {
             "type": "string",
             "defaultValue": "netscalervpx-131",
@@ -90,6 +96,13 @@
                 "description": "Value of virtual network's Address range in CIDR form. Ignore this field if opting for existing Virtual Network."
             }
         },
+        "subnetAddressMask": {
+            "defaultValue": "255.255.255.0",
+            "type": "string",
+            "metadata": {
+                "description": "Subnet Mask for the above subnet Address Prefix"
+            }
+        },
         "acceleratedNetworking": {
             "type": "Bool",
             "defaultValue": true,
@@ -154,7 +167,7 @@
                     "computerName": "[parameters('virtualMachineName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
-                    "customData": "[base64(concat( '{ \"username\": \"', parameters('adminUsername'), '\", \"vpx_config\": { \"pvt_ip_11\": \"', reference(variables('nicId')).ipConfigurations[1].properties.privateIPAddress ,'\", \"pvt_ip_12\": \"', reference(variables('nicId')).ipConfigurations[2].properties.privateIPAddress ,'\",\"subnet_11\": \"', reference(variables('subnetRef'), '2017-10-01', 'Full').properties.addressPrefix ,'\", \"subnet_12\": \"', reference(variables('subnetRef'), '2017-10-01', 'Full').properties.addressPrefix, '\", \"ns_features\": [\"LB\", \"CS\", \"SSL\", \"WL\"] }}' ))]"
+                    "customData": "[base64(concat(' \n<NS-PRE-BOOT-CONFIG> ', '\n<NS-CONFIG>', '\nset systemparameter -promptString %u@%s', '\nadd ns ip ', reference(concat(parameters('networkInterfaceName'))).ipConfigurations[1].properties.privateIPAddress, ' ', parameters('subnetAddressMask'), ' -type VIP', '\nadd ns ip ', reference(concat(parameters('networkInterfaceName')).ipConfigurations[2].properties.privateIPAddress, ' ', parameters('subnetAddressMask'), ' -type SNIP', '\nset ns rpcNode ', reference(concat(parameters('networkInterfaceName')).ipConfigurations[0].properties.privateIPAddress,' -password ', parameters('rpcNodePassword'), ' -secure YES', '\nset ns ip ', reference(concat(parameters('networkInterfaceName')).ipConfigurations[0].properties.privateIPAddress,' -gui SECUREONLY', '\n</NS-CONFIG> ', '\n</NS-PRE-BOOT-CONFIG>'))]"
                 },
                 "hardwareProfile": {
                     "vmSize": "[parameters('virtualMachineSize')]"
