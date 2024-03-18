@@ -32,6 +32,22 @@
                 "description": "Size of Azure Virtual Machine."
             }
         },
+        "ADCVersion": {
+            "type": "string",
+            "defaultValue": "adcvpxfips-13-1",
+            "allowedValues": [
+                "adcvpxfips-13-1"
+            ],
+            "metadata": {
+                "description": "Citrix ADC Version"
+            }
+        },
+        "rpcNodePassword": {
+            "type": "SecureString",
+            "metadata": {
+                "description": "Password for the RPC Node for communication between primary and secondary VPXs. [Learn More about RPCNode](https://docs.citrix.com/en-us/citrix-adc/current-release/getting-started-with-citrix-adc/change-rpc-node-password.html)"
+            }
+        },
         "vmSku": {
             "defaultValue": "netscalerfipsbyol",
             "type": "String",
@@ -103,6 +119,20 @@
                 "description": "Value of Server Side subnet in CIDR form. Ignore this field if opting for existing Virtual Network, Address prefix will be picked from existing Subnet."
             }
         },
+        "subnetAddressMask-client": {
+            "defaultValue": "255.255.255.0",
+            "type": "string",
+            "metadata": {
+                "description": "Subnet Mask for the above Client side subnet Address Prefix"
+            }
+        },
+        "subnetAddressMask-server": {
+            "defaultValue": "255.255.255.0",
+            "type": "string",
+            "metadata": {
+                "description": "Subnet Mask for the above Server side subnet Address Prefix"
+            }
+        },
         "restrictedSshAccessCIDR": {
             "type": "String",
             "metadata": {
@@ -143,14 +173,14 @@
             "plan": {
                 "name": "[parameters('vmSku')]",
                 "publisher": "citrix",
-                "product": "adcvpxfips-12-1"
+                "product": "[parameters('ADCVersion')]"
             },
             "properties": {
                 "osProfile": {
                     "computerName": "[parameters('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPassword')]",
-                    "customData": "[base64(concat('{\"username\":\"', parameters('adminUsername'), '\",\"vpx_config\":{\"pvt_ip_11\":\"', reference(concat(variables('nicN'), '-client')).ipConfigurations[0].properties.privateIPAddress ,'\",\"pvt_ip_12\":\"', reference(concat(variables('nicN'), '-server')).ipConfigurations[0].properties.privateIPAddress ,'\",\"subnet_11\":\"', reference(variables('snetRef-client'), '2017-10-01', 'Full').properties.addressPrefix ,'\",\"subnet_12\":\"', reference(variables('snetRef-server'), '2017-10-01', 'Full').properties.addressPrefix, '\"}}'))]"
+                    "customData": "[base64(concat(' \n<NS-PRE-BOOT-CONFIG> ', '\n<NS-CONFIG>', '\nset systemparameter -promptString %u@%s', '\nadd ns ip ', reference(concat(variables('nicN'), '-client')).ipConfigurations[0].properties.privateIPAddress, ' ', parameters('subnetAddressMask-client'), ' -type VIP', '\nadd ns ip ', reference(concat(variables('nicN'), '-server')).ipConfigurations[0].properties.privateIPAddress, ' ', parameters('subnetAddressMask-server'), ' -type SNIP', '\nset ns rpcNode ', reference(concat(variables('nicN'), '-management')).ipConfigurations[0].properties.privateIPAddress,' -password ', parameters('rpcNodePassword'), ' -secure YES', '\nset ns ip ', reference(concat(variables('nicN'), '-management')).ipConfigurations[0].properties.privateIPAddress,' -gui SECUREONLY', '\n</NS-CONFIG> ', '\n</NS-PRE-BOOT-CONFIG>'))]"
                 },
                 "hardwareProfile": {
                     "vmSize": "[parameters('vmSize')]"
@@ -158,7 +188,7 @@
                 "storageProfile": {
                     "imageReference": {
                         "publisher": "citrix",
-                        "offer": "adcvpxfips-12-1",
+                        "offer": "[parameters('ADCVersion')]",
                         "sku": "[parameters('vmSku')]",
                         "version": "latest"
                     },
@@ -355,7 +385,7 @@
                         "name": "default-allow-ssh",
                         "properties": {
                             "priority": 1000,
-                            "sourceAddressPrefix": "parameters('restrictedSshAccessCIDR')",
+                            "sourceAddressPrefix": "[parameters('restrictedSshAccessCIDR')]",
                             "protocol": "TCP",
                             "destinationPortRange": "22",
                             "access": "Allow",
@@ -388,12 +418,12 @@
             "properties": {
                 "securityRules": [
                     {
-                        "name": "default-allow-ssh",
+                        "name": "default-allow-secure-https",
                         "properties": {
                             "priority": 1000,
                             "sourceAddressPrefix": "*",
                             "protocol": "TCP",
-                            "destinationPortRange": "22",
+                            "destinationPortRange": "443",
                             "access": "Allow",
                             "direction": "Inbound",
                             "sourcePortRange": "*",

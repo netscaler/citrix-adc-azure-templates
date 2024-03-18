@@ -16,20 +16,20 @@
 }
 ```
 
-### 2. Now search for `netscalervpx-130` and replace it with `adcvpxfips-12-1` in two places
+### 2. Now search for `netscalervpx-130` and replace it with `adcvpxfips-13-1` in two places
 
 ``` json
 "plan": {
     "name": "[parameters('vmSku')]",
     "publisher": "citrix",
-    "product": "adcvpxfips-12-1"
+    "product": "adcvpxfips-13-1"
 }
  ```
 
 ``` json
 "imageReference": {
     "publisher": "citrix",
-    "offer": "adcvpxfips-12-1",
+    "offer": "adcvpxfips-13-1",
     "sku": "[parameters('vmSku')]",
     "version": "latest"
 }

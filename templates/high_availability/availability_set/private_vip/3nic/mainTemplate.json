@@ -29,14 +29,14 @@
     },
     "ADCVersion": {
       "type": "string",
-      "defaultValue": "netscalervpx-131",
+      "defaultValue": "netscalervpx-141",
       "allowedValues": [
+        "netscalervpx-141",
         "netscalervpx-131",
-        "netscalervpx-130",
-        "netscalervpx-121"
+        "netscalervpx-130"
       ],
       "metadata": {
-        "description": "Citrix ADC Version. netscalervpx-131 is recommended. Note: 5000Mbps is supported only in 13.1 version."
+        "description": "Citrix ADC Version. netscalervpx-141 is recommended. Note: 5000Mbps is supported after (including) 13.1 version."
       }
     },
     "vmSku": {
@@ -341,7 +341,7 @@
           "computerName": "[concat(variables('VpxNamePrefix'), copyIndex())]",
           "adminUsername": "[parameters('adminUsername')]",
           "adminPassword": "[parameters('adminPassword')]",
-          "customData": "[base64(concat(' \n<NS-PRE-BOOT-CONFIG> ', '\n<NS-CONFIG>', '\nset systemparameter -promptString %u@%s', '\nadd ha node 1 ', reference(concat(variables('NicNamePrefix'), sub(1, copyIndex()),'-01')).ipConfigurations[0].properties.privateIPAddress, ' -inc ENABLED', '\nadd ns ip ', reference(concat(variables('NicNamePrefix'), copyIndex(), '-11')).ipConfigurations[0].properties.privateIPAddress, ' ', parameters('subnetAddressMask-11'), ' -type SNIP', '\nadd ns ip ', reference(concat(variables('NicNamePrefix'), copyIndex(), '-12')).ipConfigurations[0].properties.privateIPAddress, ' ', parameters('subnetAddressMask-12'), ' -type SNIP', '\nset ns rpcNode ', reference(concat(variables('NicNamePrefix'), copyIndex(),'-01')).ipConfigurations[0].properties.privateIPAddress,' -password ', parameters('rpcNodePassword'), ' -secure YES', '\nset ns rpcNode ', reference(concat(variables('NicNamePrefix'), sub(1, copyIndex()),'-01')).ipConfigurations[0].properties.privateIPAddress,' -password ', parameters('rpcNodePassword'), ' -secure YES', '\n</NS-CONFIG> ', '\n</NS-PRE-BOOT-CONFIG>'))]"
+          "customData": "[base64(concat(' \n<NS-PRE-BOOT-CONFIG> ', '\n<NS-CONFIG>', '\nset systemparameter -promptString %u@%s', '\nadd ha node 1 ', reference(concat(variables('NicNamePrefix'), sub(1, copyIndex()),'-01')).ipConfigurations[0].properties.privateIPAddress, ' -inc ENABLED', '\nadd ns ip ', reference(concat(variables('NicNamePrefix'), copyIndex(), '-11')).ipConfigurations[0].properties.privateIPAddress, ' ', parameters('subnetAddressMask-11'), ' -type SNIP', '\nadd ns ip ', reference(concat(variables('NicNamePrefix'), copyIndex(), '-12')).ipConfigurations[0].properties.privateIPAddress, ' ', parameters('subnetAddressMask-12'), ' -type SNIP', '\nset ns rpcNode ', reference(concat(variables('NicNamePrefix'), copyIndex(),'-01')).ipConfigurations[0].properties.privateIPAddress,' -password ', parameters('rpcNodePassword'), ' -secure YES', '\nset ns rpcNode ', reference(concat(variables('NicNamePrefix'), sub(1, copyIndex()),'-01')).ipConfigurations[0].properties.privateIPAddress,' -password ', parameters('rpcNodePassword'), ' -secure YES', '\nset ns ip ', reference(concat(variables('NicNamePrefix'), copyIndex(),'-01')).ipConfigurations[0].properties.privateIPAddress,' -gui SECUREONLY', '\n</NS-CONFIG> ', '\n</NS-PRE-BOOT-CONFIG>'))]"
         },
         "hardwareProfile": {
           "vmSize": "[parameters('vmSize')]"
