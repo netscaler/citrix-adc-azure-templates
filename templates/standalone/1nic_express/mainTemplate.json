@@ -333,7 +333,7 @@
                             "protocol": "TCP",
                             "access": "Allow",
                             "direction": "Inbound",
-                            "sourceAddressPrefix": "parameters('restrictedSshAccessCIDR')",
+                            "sourceAddressPrefix": "[parameters('restrictedSshAccessCIDR')]",
                             "sourcePortRange": "*",
                             "destinationAddressPrefix": "*",
                             "destinationPortRange": "22"
@@ -347,7 +347,7 @@
                             "protocol": "Tcp",
                             "access": "Allow",
                             "direction": "Inbound",
-                            "sourceAddressPrefix": "parameters('restrictedSshAccessCIDR')",
+                            "sourceAddressPrefix": "[parameters('restrictedSshAccessCIDR')]",
                             "sourcePortRange": "*",
                             "destinationAddressPrefix": "*",
                             "destinationPortRange": "443"
