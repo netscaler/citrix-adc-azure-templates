@@ -2,6 +2,12 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "130.2020.12.21",
     "parameters": {
+        "namePrefix": {
+            "type": "String",
+            "metadata": {
+                "description": "Prefix for the names of all resources that will be created."
+            }
+        },
         "adminUsername": {
             "type": "String",
             "metadata": {
@@ -37,6 +43,16 @@
             ],
             "metadata": {
                 "description": "Citrix ADC Version. netscalervpx-141 is recommended. Note: 5000Mbps is supported after (including) 13.1 version."
+            }
+        },
+        "albSkuType": {
+            "type": "String",
+            "allowedValues": [
+                "Basic",
+                "Standard"
+            ],
+            "metadata": {
+                "description": "SKU Type of Azure Load Balancer."
             }
         },
         "vmSku": {
@@ -172,16 +188,16 @@
         }
     },
     "variables": {
-        "vmN": "ns-vpx",
-        "nicN": "ns-vpx-nic",
-        "nsgN": "ns-vpx-nic-nsg",
-        "lbN": "alb",
-        "bePoolN": "bepool-11",
-        "probeN": "probe-11",
-        "ipConfN": "ipconf-11",
-        "avsN": "avl-set",
-        "alb-pipN": "alb-publicip",
-        "mgmt-pipN-suffix": "-mgmt-publicip",
+        "vmN": "[concat(parameters('namePrefix'), '-ns-vpx')]",
+        "nicN": "[concat(parameters('namePrefix'), '-ns-vpx-nic')]",
+        "nsgN": "[concat(parameters('namePrefix'), '-ns-vpx-nic-nsg')]",
+        "lbN": "[concat(parameters('namePrefix'), '-alb')]",
+        "bePoolN": "[concat(parameters('namePrefix'), '-bepool-11')]",
+        "probeN": "[concat(parameters('namePrefix'), '-probe-11')]",
+        "ipConfN": "[concat(parameters('namePrefix'), '-ipconf-11')]",
+        "avsN": "[concat(parameters('namePrefix'), '-avl-set')]",
+        "alb-pipN": "[concat(parameters('namePrefix'), '-alb-publicip')]",
+        "mgmt-pipN-suffix": "[concat(parameters('namePrefix'), '-mgmt-publicip')]",
         "saN": "[concat('vpxha', uniqueString(resourceGroup().id))]",
         "vnetRg": "[if(equals(parameters('vnetResourceGroup'), ''), resourceGroup().name,parameters('vnetResourceGroup'))]",
         "vnetId": "[resourceId(variables('vnetRg'), 'Microsoft.Network/virtualNetworks', parameters('vnetName'))]",
@@ -261,6 +277,9 @@
                         }
                     }
                 ]
+            },
+            "sku": {
+                "name": "[parameters('albSkuType')]"
             },
             "dependsOn": [
                 "[concat('Microsoft.Network/publicIpAddresses/', variables('alb-pipN'))]"
@@ -516,7 +535,10 @@
             "apiVersion": "2017-10-01",
             "location": "[resourceGroup().location]",
             "properties": {
-                "publicIpAllocationMethod": "Dynamic"
+                "publicIpAllocationMethod": "[if(equals(parameters('albSkuType'), 'Standard'), 'Static', 'Dynamic')]"
+            },
+            "sku": {
+                "name": "[parameters('albSkuType')]"
             }
         },
         {
@@ -529,7 +551,10 @@
                 "count": 2
             },
             "properties": {
-                "publicIpAllocationMethod": "Dynamic"
+                "publicIpAllocationMethod": "[if(equals(parameters('albSkuType'), 'Standard'), 'Static', 'Dynamic')]"
+            },
+            "sku": {
+                "name": "[parameters('albSkuType')]"
             }
         },
         {
