@@ -12,4 +12,4 @@ The Azure custom template deploys the VPX in a single-NIC mode. The standard Cit
 
 ## Quick Launch Link
 
-[![Create Citrix ADC VPX Express](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fcitrix-adc-azure-templates%2Fmaster%2Ftemplates%2Fstandalone%2F1nic_express%2FmainTemplate.json)
+[![Create Citrix ADC VPX Express](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fcitrix-adc-azure-templates%2Fmaster%2Ftemplates%2Fstandalone%2F1nic_express%2FmainTemplate.json)
