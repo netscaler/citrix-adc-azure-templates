@@ -6,9 +6,9 @@ A single Citrix ADC VPX instance can be provisioned in Azure Resource Manager (A
 
 |Template|Quick Launch|
 |--|--|
-|[1nic_express](./1nic_express)|[![Azure Deploy Button](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fcitrix-adc-azure-templates%2Fmaster%2Ftemplates%2Fstandalone%2F1nic_express%2FmainTemplate.json)|
-|[3nic](./3nic)|[![Azure Deploy Button](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fcitrix-adc-azure-templates%2Fmaster%2Ftemplates%2Fstandalone%2F3nic%2FmainTemplate.json)|
-|[3nic_backend_autoscale](./3nic_backend_autoscale)|[![Azure Deploy Button](http://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fcitrix-adc-azure-templates%2Fmaster%2Ftemplates%2Fstandalone%2F3nic_backend_autoscale%2FmainTemplate.json)|
+|[1nic_express](./1nic_express)|[![Azure Deploy Button](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fcitrix-adc-azure-templates%2Fmaster%2Ftemplates%2Fstandalone%2F1nic_express%2FmainTemplate.json)|
+|[3nic](./3nic)|[![Azure Deploy Button](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fcitrix-adc-azure-templates%2Fmaster%2Ftemplates%2Fstandalone%2F3nic%2FmainTemplate.json)|
+|[3nic_backend_autoscale](./3nic_backend_autoscale)|[![Azure Deploy Button](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fcitrix%2Fcitrix-adc-azure-templates%2Fmaster%2Ftemplates%2Fstandalone%2F3nic_backend_autoscale%2FmainTemplate.json)|
 
 ## For understanding of architecture or manual deployment steps
 

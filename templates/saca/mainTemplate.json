@@ -32,19 +32,7 @@
             "defaultValue": "netscalerbyol",
             "type": "String",
             "allowedValues": [
-                "netscalerbyol",
-                "netscaler10standard",
-                "netscaler10enterprise",
-                "netscaler10platinum",
-                "netscaler200standard",
-                "netscaler200enterprise",
-                "netscaler200platinum",
-                "netscaler1000standard",
-                "netscaler1000enterprise",
-                "netscaler1000platinum",
-                "netscaler3000standard",
-                "netscaler3000enterprise",
-                "netscaler3000platinum"
+                "netscalerbyol"
             ],
             "metadata": {
                 "description": "SKU of Citrix ADC Image."
